@@ -1,7 +1,7 @@
 {
   "name": "money-trackr-mobile",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -9,10 +9,32 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
+    "@gorhom/bottom-sheet": "^5.2.8",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "8.6.0",
+    "axios": "^1.13.6",
+    "date-fns": "^4.1.0",
     "expo": "~55.0.7",
+    "expo-auth-session": "~55.0.8",
+    "expo-constants": "~55.0.8",
+    "expo-crypto": "~55.0.10",
+    "expo-haptics": "~55.0.9",
+    "expo-image": "~55.0.6",
+    "expo-linking": "~55.0.7",
+    "expo-router": "~55.0.6",
+    "expo-secure-store": "~55.0.9",
     "expo-status-bar": "~55.0.4",
+    "expo-web-browser": "~55.0.10",
     "react": "19.2.0",
-    "react-native": "0.83.2"
+    "react-native": "0.83.2",
+    "react-native-gesture-handler": "~2.30.0",
+    "react-native-gifted-charts": "^1.4.76",
+    "react-native-linear-gradient": "^2.8.3",
+    "react-native-reanimated": "4.2.1",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "react-native-svg": "15.15.3"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
