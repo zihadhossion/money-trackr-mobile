@@ -30,8 +30,8 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-web-browser",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "@react-native-google-signin/google-signin"
     ],
     "extra": {
       "router": {},
