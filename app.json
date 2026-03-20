@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "money-trackr-mobile",
-    "slug": "money-trackr-mobile",
+    "name": "Money Trackr",
+    "slug": "money-trackr",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
