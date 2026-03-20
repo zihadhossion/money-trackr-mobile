@@ -8,7 +8,7 @@ import api from '../services/api';
 import { getAccessToken, setAccessToken, setRefreshToken, setUserData, getUserData, clearAuthStorage } from '../utils/storage';
 import type { User } from '../types';
 
-const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '';
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '';
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '';
 
 interface AuthContextType {
@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     GoogleSignin.configure({
+      webClientId: GOOGLE_WEB_CLIENT_ID,
       iosClientId: GOOGLE_IOS_CLIENT_ID,
       scopes: ['openid', 'profile', 'email'],
     });
