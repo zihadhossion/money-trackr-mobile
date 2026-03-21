@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider } from '../src/contexts/ThemeContext';
 import { AuthProvider } from '../src/contexts/AuthContext';
+import { BiometricProvider } from '../src/contexts/BiometricContext';
 import { useTheme } from '../src/contexts/ThemeContext';
 
 function InnerLayout() {
@@ -24,7 +25,9 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
         <AuthProvider>
-          <InnerLayout />
+          <BiometricProvider>
+            <InnerLayout />
+          </BiometricProvider>
         </AuthProvider>
       </ThemeProvider>
     </GestureHandlerRootView>

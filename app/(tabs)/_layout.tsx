@@ -2,13 +2,16 @@ import { Redirect, Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { useBiometric } from '../../src/contexts/BiometricContext';
 import { View, ActivityIndicator } from 'react-native';
+import BiometricLockScreen from '../../src/components/ui/BiometricLockScreen';
 
 export default function TabsLayout() {
   const { colors } = useTheme();
   const { isAuthenticated, loading } = useAuth();
+  const { isLocked, loading: biometricLoading } = useBiometric();
 
-  if (loading) {
+  if (loading || biometricLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgPrimary }}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -18,6 +21,10 @@ export default function TabsLayout() {
 
   if (!isAuthenticated) {
     return <Redirect href="/(auth)/login" />;
+  }
+
+  if (isLocked) {
+    return <BiometricLockScreen />;
   }
 
   return (

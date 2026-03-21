@@ -1,19 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator,
+  TextInput, Alert, ActivityIndicator, Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { useBiometric } from '../../src/contexts/BiometricContext';
 import { settingsService } from '../../src/services/settingsService';
 import type { Settings } from '../../src/types';
 
 export default function SettingsScreen() {
   const { colors, theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
+  const { isBiometricAvailable, isBiometricEnabled, setBiometricEnabled, biometricType } = useBiometric();
   const s = styles(colors);
 
   const [settings, setSettings] = useState<Settings>({ currency: 'BDT', monthlyBudget: 0 });
@@ -41,6 +43,13 @@ export default function SettingsScreen() {
       Alert.alert('Error', e.message || 'Failed to save settings');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggleBiometric = async (value: boolean) => {
+    const success = await setBiometricEnabled(value);
+    if (!success && value) {
+      Alert.alert('Biometric Setup Failed', 'Could not verify your biometric. Please try again.');
     }
   };
 
@@ -100,6 +109,32 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Security */}
+        {isBiometricAvailable && (
+          <View style={[s.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>Security</Text>
+            <View style={s.settingRow}>
+              <View style={s.settingLeft}>
+                <View style={[s.settingIcon, { backgroundColor: `${colors.primary}15` }]}>
+                  <Feather name={biometricType === 'facial' ? 'eye' : 'lock'} size={18} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.settingLabel, { color: colors.textPrimary }]}>Biometric Login</Text>
+                  <Text style={[s.settingSubtitle, { color: colors.textMuted }]}>
+                    {biometricType === 'facial' ? 'Use Face ID to unlock' : 'Use fingerprint to unlock'}
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={isBiometricEnabled}
+                onValueChange={handleToggleBiometric}
+                trackColor={{ false: colors.borderColor, true: `${colors.primary}50` }}
+                thumbColor={isBiometricEnabled ? colors.primary : colors.textMuted}
+              />
+            </View>
+          </View>
+        )}
+
         {/* Budget & currency */}
         <View style={[s.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
           <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>Financial Settings</Text>
@@ -149,6 +184,11 @@ const styles = (colors: any) => StyleSheet.create({
   profileName: { fontSize: 17, fontWeight: '700' },
   profileEmail: { fontSize: 13 },
   sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  settingLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  settingIcon: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  settingLabel: { fontSize: 15, fontWeight: '600' },
+  settingSubtitle: { fontSize: 12, marginTop: 2 },
   themeRow: { flexDirection: 'row', gap: 12 },
   themeBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, borderWidth: 1.5, padding: 12 },
   themeBtnText: { flex: 1, fontSize: 14, fontWeight: '600' },
