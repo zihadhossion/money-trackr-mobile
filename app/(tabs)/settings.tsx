@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator, Switch,
+  TextInput, Alert, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { useBiometric } from '../../src/contexts/BiometricContext';
 import { settingsService } from '../../src/services/settingsService';
 import type { Settings } from '../../src/types';
 
 export default function SettingsScreen() {
   const { colors, theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
-  const { isBiometricAvailable, isBiometricEnabled, setBiometricEnabled, biometricType } = useBiometric();
   const s = useMemo(() => styles(colors), [colors]);
 
   const [settings, setSettings] = useState<Settings>({ currency: 'BDT', monthlyBudget: 0 });
@@ -42,13 +40,6 @@ export default function SettingsScreen() {
       Alert.alert('Error', e.message || 'Failed to save settings');
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleToggleBiometric = async (value: boolean) => {
-    const success = await setBiometricEnabled(value);
-    if (!success && value) {
-      Alert.alert('Biometric Setup Failed', 'Could not verify your biometric. Please try again.');
     }
   };
 
@@ -108,31 +99,6 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Security */}
-        {isBiometricAvailable && (
-          <View style={[s.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-            <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>Security</Text>
-            <View style={s.settingRow}>
-              <View style={s.settingLeft}>
-                <View style={[s.settingIcon, { backgroundColor: `${colors.primary}15` }]}>
-                  <Feather name={biometricType === 'facial' ? 'eye' : 'lock'} size={18} color={colors.primary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[s.settingLabel, { color: colors.textPrimary }]}>Biometric Login</Text>
-                  <Text style={[s.settingSubtitle, { color: colors.textMuted }]}>
-                    {biometricType === 'facial' ? 'Use Face ID to unlock' : 'Use fingerprint to unlock'}
-                  </Text>
-                </View>
-              </View>
-              <Switch
-                value={isBiometricEnabled}
-                onValueChange={handleToggleBiometric}
-                trackColor={{ false: colors.borderColor, true: `${colors.primary}50` }}
-                thumbColor={isBiometricEnabled ? colors.primary : colors.textMuted}
-              />
-            </View>
-          </View>
-        )}
 
         {/* Budget & currency */}
         <View style={[s.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
