@@ -79,9 +79,6 @@ export default function DashboardScreen() {
             <Text style={[s.greeting, { color: colors.textMuted }]}>Welcome back,</Text>
             <Text style={[s.name, { color: colors.textPrimary }]}>{user?.displayName ?? 'User'}</Text>
           </View>
-          <View style={[s.headerIcon, { backgroundColor: `${colors.primary}15` }]}>
-            <Feather name="home" size={20} color={colors.primary} />
-          </View>
         </View>
 
         {/* Budget alert */}
@@ -136,7 +133,6 @@ const styles = (colors: any) => StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   greeting: { fontSize: 13 },
   name: { fontSize: 22, fontWeight: '700' },
-  headerIcon: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   alert: { borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   alertText: { flex: 1, fontSize: 13, lineHeight: 18 },
   cardGrid: { gap: 12 },
