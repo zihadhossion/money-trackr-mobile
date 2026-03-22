@@ -19,23 +19,9 @@ export function formatDate(dateStr: string): string {
   }
 }
 
-export function formatDateShort(dateStr: string): string {
-  if (!dateStr) return '';
-  try {
-    return format(new Date(dateStr), 'MMM dd');
-  } catch {
-    return dateStr;
-  }
-}
-
 export function toISODate(date: Date): string {
   return format(date, 'yyyy-MM-dd');
 }
-
-export const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
 
 export const MONTHS_SHORT = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

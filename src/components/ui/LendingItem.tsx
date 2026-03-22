@@ -9,13 +9,12 @@ import { LendingStatus } from '../../enums/lending-status.enum';
 
 interface LendingItemProps {
   item: Lending;
-  currency?: string;
   onEdit: () => void;
   onDelete: () => void;
   onRepay: () => void;
 }
 
-export default React.memo(function LendingItem({ item, currency = '৳', onEdit, onDelete, onRepay }: LendingItemProps) {
+export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay }: LendingItemProps) {
   const { colors } = useTheme();
   const isLent = item.type === LendingType.LENT;
 
@@ -46,12 +45,12 @@ export default React.memo(function LendingItem({ item, currency = '৳', onEdit,
       <View style={styles.amountRow}>
         <View>
           <Text style={[styles.amountLabel, { color: colors.textMuted }]}>Amount</Text>
-          <Text style={[styles.amount, { color: colors.textPrimary }]}>{currency}{item.amount.toLocaleString()}</Text>
+          <Text style={[styles.amount, { color: colors.textPrimary }]}>{'৳'}{item.amount.toLocaleString()}</Text>
         </View>
         <View style={{ alignItems: 'flex-end' }}>
           <Text style={[styles.amountLabel, { color: colors.textMuted }]}>Remaining</Text>
           <Text style={[styles.amount, { color: item.remainingAmount > 0 ? colors.warning : colors.success }]}>
-            {currency}{item.remainingAmount.toLocaleString()}
+            {'৳'}{item.remainingAmount.toLocaleString()}
           </Text>
         </View>
       </View>
