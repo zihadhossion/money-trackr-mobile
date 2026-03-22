@@ -11,7 +11,7 @@ interface TrendsBarChartProps {
 
 const screenWidth = Dimensions.get('window').width;
 
-export default function TrendsBarChart({ data, currency = '৳' }: TrendsBarChartProps) {
+export default React.memo(function TrendsBarChart({ data }: TrendsBarChartProps) {
   const { colors } = useTheme();
 
   if (!data || data.length === 0) {
@@ -23,18 +23,18 @@ export default function TrendsBarChart({ data, currency = '৳' }: TrendsBarChar
   }
 
   // Build grouped bar data — income + expenses side by side per month
-  const barData = data.flatMap((item, i) => [
+  const barData = data.flatMap((item) => [
     {
       value: item.income,
       label: item.month.substring(0, 3),
-      frontColor: '#10b981',
+      frontColor: colors.success,
       spacing: 2,
       labelWidth: 30,
       labelTextStyle: { color: colors.textMuted, fontSize: 10 },
     },
     {
       value: item.expenses,
-      frontColor: '#ef4444',
+      frontColor: colors.danger,
       spacing: 16,
     },
   ]);
@@ -43,11 +43,11 @@ export default function TrendsBarChart({ data, currency = '৳' }: TrendsBarChar
     <View style={styles.container}>
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#10b981' }]} />
+          <View style={[styles.legendDot, { backgroundColor: colors.success }]} />
           <Text style={[styles.legendText, { color: colors.textSecondary }]}>Income</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#ef4444' }]} />
+          <View style={[styles.legendDot, { backgroundColor: colors.danger }]} />
           <Text style={[styles.legendText, { color: colors.textSecondary }]}>Expenses</Text>
         </View>
       </View>
@@ -67,7 +67,7 @@ export default function TrendsBarChart({ data, currency = '৳' }: TrendsBarChar
       />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: { gap: 12 },

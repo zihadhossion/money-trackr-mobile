@@ -11,7 +11,7 @@ interface EmptyStateProps {
   onAction?: () => void;
 }
 
-export default function EmptyState({ icon = 'inbox', title, subtitle, actionLabel, onAction }: EmptyStateProps) {
+export default React.memo(function EmptyState({ icon = 'inbox', title, subtitle, actionLabel, onAction }: EmptyStateProps) {
   const { colors } = useTheme();
   return (
     <View style={styles.container}>
@@ -27,7 +27,7 @@ export default function EmptyState({ icon = 'inbox', title, subtitle, actionLabe
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 24 },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   Alert, RefreshControl, ActivityIndicator,
@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { useBottomSheet } from '../../src/hooks/useBottomSheet';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
 import TransactionItem from '../../src/components/ui/TransactionItem';
 import EmptyState from '../../src/components/ui/EmptyState';
@@ -15,24 +16,23 @@ import { incomeService } from '../../src/services/incomeService';
 import { categoryService } from '../../src/services/categoryService';
 import { getMonthDateRange } from '../../src/utils/date';
 import { formatCurrency } from '../../src/utils/currency';
+import { screenStyles } from '../../src/theme/screenStyles';
 import type { Income, Category } from '../../src/types';
 
 export default function IncomeScreen() {
   const { colors } = useTheme();
-  const s = styles(colors);
-  const now = new Date();
+  const ss = useMemo(() => screenStyles(colors), [colors]);
+  const s = useMemo(() => localStyles(colors), [colors]);
 
-  const [month, setMonth] = useState(now.getMonth() + 1);
-  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
+  const [year, setYear] = useState(() => new Date().getFullYear());
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [editing, setEditing] = useState<Income | null>(null);
 
-  const sheetRef = useRef<BottomSheet>(null);
-  const snapPoints = ['90%'];
+  const { sheetRef, snapPoints, editing, openAdd, openEdit, closeSheet } = useBottomSheet<Income>();
 
   const total = incomes.reduce((sum, i) => sum + i.amount, 0);
 
@@ -54,10 +54,6 @@ export default function IncomeScreen() {
   }, [year, month]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-
-  const openAdd = () => { setEditing(null); sheetRef.current?.expand(); };
-  const openEdit = (item: Income) => { setEditing(item); sheetRef.current?.expand(); };
-  const closeSheet = () => { sheetRef.current?.close(); setEditing(null); };
 
   const handleSubmit = async (data: Omit<Income, '_id'>) => {
     setSaving(true);
@@ -98,20 +94,20 @@ export default function IncomeScreen() {
   };
 
   return (
-    <SafeAreaView style={[s.safe, { backgroundColor: colors.bgSecondary }]}>
-      <View style={s.header}>
+    <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
+      <View style={[ss.header, { alignItems: 'flex-start' }]}>
         <View>
-          <Text style={[s.title, { color: colors.textPrimary }]}>Income</Text>
-          <Text style={[s.total, { color: '#10b981' }]}>{formatCurrency(total)}</Text>
+          <Text style={[ss.title, { color: colors.textPrimary }]}>Income</Text>
+          <Text style={[s.total, { color: colors.success }]}>{formatCurrency(total)}</Text>
         </View>
-        <TouchableOpacity style={[s.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
+        <TouchableOpacity style={[ss.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
           <Feather name="plus" size={20} color="#fff" />
-          <Text style={s.addBtnText}>Add</Text>
+          <Text style={ss.addBtnText}>Add</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView
-        contentContainerStyle={s.scroll}
+        contentContainerStyle={ss.scroll}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); }} tintColor={colors.primary} />}
       >
         <MonthYearPicker month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
@@ -152,12 +148,6 @@ export default function IncomeScreen() {
   );
 }
 
-const styles = (colors: any) => StyleSheet.create({
-  safe: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 16, paddingBottom: 8 },
-  title: { fontSize: 22, fontWeight: '700' },
+const localStyles = (colors: any) => StyleSheet.create({
   total: { fontSize: 16, fontWeight: '600', marginTop: 2 },
-  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 16 },
-  addBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  scroll: { padding: 16, paddingTop: 8, paddingBottom: 100 },
 });

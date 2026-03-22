@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { formStyles } from '../../theme/formStyles';
 import type { Lending } from '../../types';
 import { LendingType } from '../../enums/lending-type.enum';
 import { LendingStatus } from '../../enums/lending-status.enum';
@@ -17,7 +18,8 @@ interface LendingFormProps {
 
 export default function LendingForm({ initial, onSubmit, onCancel, loading }: LendingFormProps) {
   const { colors } = useTheme();
-  const s = styles(colors);
+  const fs = useMemo(() => formStyles(colors), [colors]);
+  const s = useMemo(() => localStyles(colors), [colors]);
   const isEdit = !!initial?._id;
 
   const [amount, setAmount] = useState(initial?.amount?.toString() ?? '');
@@ -41,11 +43,11 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
   }
 
   return (
-    <ScrollView style={s.container} keyboardShouldPersistTaps="handled">
-      <Text style={s.title}>{isEdit ? 'Edit Lending' : 'Add Lending'}</Text>
+    <ScrollView style={fs.container} keyboardShouldPersistTaps="handled">
+      <Text style={fs.title}>{isEdit ? 'Edit Lending' : 'Add Lending'}</Text>
 
       {/* Type toggle */}
-      <Text style={s.label}>Type</Text>
+      <Text style={fs.label}>Type</Text>
       <View style={s.segmented}>
         {([LendingType.LENT, LendingType.BORROWED] as LendingType[]).map((t) => (
           <TouchableOpacity
@@ -58,27 +60,27 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
         ))}
       </View>
 
-      <Text style={s.label}>Person Name *</Text>
-      <TextInput style={s.input} value={personName} onChangeText={setPersonName} placeholder="Name" placeholderTextColor={colors.textMuted} />
+      <Text style={fs.label}>Person Name *</Text>
+      <TextInput style={fs.input} value={personName} onChangeText={setPersonName} placeholder="Name" placeholderTextColor={colors.textMuted} />
 
-      <Text style={s.label}>Amount *</Text>
-      <View style={s.inputRow}>
-        <Text style={s.currencySymbol}>৳</Text>
-        <TextInput style={s.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} />
+      <Text style={fs.label}>Amount *</Text>
+      <View style={fs.inputRow}>
+        <Text style={fs.currencySymbol}>৳</Text>
+        <TextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} />
       </View>
 
-      <Text style={s.label}>Date</Text>
-      <TouchableOpacity style={s.select} onPress={() => setShowDatePicker(true)}>
-        <Text style={[s.selectText, { color: colors.textPrimary }]}>{toISODate(date)}</Text>
+      <Text style={fs.label}>Date</Text>
+      <TouchableOpacity style={fs.select} onPress={() => setShowDatePicker(true)}>
+        <Text style={[fs.selectText, { color: colors.textPrimary }]}>{toISODate(date)}</Text>
         <Feather name="calendar" size={16} color={colors.textMuted} />
       </TouchableOpacity>
       {showDatePicker && (
         <DateTimePicker value={date} mode="date" display="default" onChange={(_, d) => { setShowDatePicker(false); if (d) setDate(d); }} />
       )}
 
-      <Text style={s.label}>Due Date (optional)</Text>
-      <TouchableOpacity style={s.select} onPress={() => setShowDueDatePicker(true)}>
-        <Text style={[s.selectText, { color: dueDate ? colors.textPrimary : colors.textMuted }]}>{dueDate ? toISODate(dueDate) : 'No due date'}</Text>
+      <Text style={fs.label}>Due Date (optional)</Text>
+      <TouchableOpacity style={fs.select} onPress={() => setShowDueDatePicker(true)}>
+        <Text style={[fs.selectText, { color: dueDate ? colors.textPrimary : colors.textMuted }]}>{dueDate ? toISODate(dueDate) : 'No due date'}</Text>
         <Feather name="calendar" size={16} color={colors.textMuted} />
       </TouchableOpacity>
       {showDueDatePicker && (
@@ -87,7 +89,7 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
 
       {isEdit && (
         <>
-          <Text style={s.label}>Status</Text>
+          <Text style={fs.label}>Status</Text>
           <View style={s.statusRow}>
             {([LendingStatus.ACTIVE, LendingStatus.SETTLED, LendingStatus.OVERDUE] as LendingStatus[]).map((st) => (
               <TouchableOpacity
@@ -102,38 +104,24 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
         </>
       )}
 
-      <Text style={s.label}>Notes</Text>
-      <TextInput style={[s.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder="Optional notes" placeholderTextColor={colors.textMuted} />
+      <Text style={fs.label}>Notes</Text>
+      <TextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder="Optional notes" placeholderTextColor={colors.textMuted} />
 
-      <View style={s.buttons}>
-        <TouchableOpacity style={s.cancelBtn} onPress={onCancel}><Text style={[s.cancelText, { color: colors.textSecondary }]}>Cancel</Text></TouchableOpacity>
-        <TouchableOpacity style={[s.submitBtn, { backgroundColor: colors.primary }]} onPress={handleSubmit} disabled={loading}>
-          <Text style={s.submitText}>{loading ? 'Saving...' : 'Save'}</Text>
+      <View style={fs.buttons}>
+        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>Cancel</Text></TouchableOpacity>
+        <TouchableOpacity style={[fs.submitBtn, { backgroundColor: colors.primary }]} onPress={handleSubmit} disabled={loading}>
+          <Text style={fs.submitText}>{loading ? 'Saving...' : 'Save'}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 }
 
-const styles = (colors: any) => StyleSheet.create({
-  container: { padding: 20 },
-  title: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 20 },
-  label: { fontSize: 13, fontWeight: '600', color: colors.textSecondary, marginBottom: 6, marginTop: 14 },
+const localStyles = (colors: any) => StyleSheet.create({
   segmented: { flexDirection: 'row', borderRadius: 10, borderWidth: 1, borderColor: colors.borderColor, overflow: 'hidden' },
   segmentBtn: { flex: 1, padding: 10, alignItems: 'center' },
   segmentText: { fontSize: 14, fontWeight: '600' },
   statusRow: { flexDirection: 'row', gap: 8 },
   statusBtn: { flex: 1, borderRadius: 8, borderWidth: 1, borderColor: colors.borderColor, padding: 8, alignItems: 'center' },
   statusText: { fontSize: 12, fontWeight: '600' },
-  inputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.borderColor, borderRadius: 10, backgroundColor: colors.bgTertiary, paddingHorizontal: 12 },
-  currencySymbol: { fontSize: 18, color: colors.textMuted, marginRight: 8 },
-  amountInput: { flex: 1, fontSize: 18, color: colors.textPrimary, paddingVertical: 12, fontWeight: '600' },
-  input: { borderWidth: 1, borderColor: colors.borderColor, borderRadius: 10, backgroundColor: colors.bgTertiary, color: colors.textPrimary, padding: 12, fontSize: 14 },
-  select: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: colors.borderColor, borderRadius: 10, backgroundColor: colors.bgTertiary, padding: 12 },
-  selectText: { fontSize: 14 },
-  buttons: { flexDirection: 'row', gap: 12, marginTop: 24, marginBottom: 40 },
-  cancelBtn: { flex: 1, borderWidth: 1, borderColor: colors.borderColor, borderRadius: 10, padding: 14, alignItems: 'center' },
-  cancelText: { fontSize: 15, fontWeight: '600' },
-  submitBtn: { flex: 2, borderRadius: 10, padding: 14, alignItems: 'center' },
-  submitText: { fontSize: 15, fontWeight: '600', color: '#fff' },
 });

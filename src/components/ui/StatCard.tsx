@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import type { Colors } from '../../theme/colors';
 
 type Variant = 'success' | 'danger' | 'primary' | 'warning' | 'secondary';
 
@@ -14,17 +15,20 @@ interface StatCardProps {
   subtitle?: string;
 }
 
-const variantConfig: Record<Variant, { bg: string; iconBg: string; iconColor: string }> = {
-  success:   { bg: '#d1fae5', iconBg: '#10b981', iconColor: '#ffffff' },
-  danger:    { bg: '#fee2e2', iconBg: '#ef4444', iconColor: '#ffffff' },
-  primary:   { bg: '#e0e7ff', iconBg: '#6366f1', iconColor: '#ffffff' },
-  warning:   { bg: '#fef3c7', iconBg: '#f59e0b', iconColor: '#ffffff' },
-  secondary: { bg: '#ede9fe', iconBg: '#8b5cf6', iconColor: '#ffffff' },
+const getVariantConfig = (colors: Colors, variant: Variant) => {
+  const map: Record<Variant, { bg: string; iconBg: string; iconColor: string }> = {
+    success:   { bg: colors.successBg, iconBg: colors.success, iconColor: '#ffffff' },
+    danger:    { bg: colors.dangerBg, iconBg: colors.danger, iconColor: '#ffffff' },
+    primary:   { bg: colors.primaryBg, iconBg: colors.primary, iconColor: '#ffffff' },
+    warning:   { bg: colors.warningBg, iconBg: colors.warning, iconColor: '#ffffff' },
+    secondary: { bg: colors.secondaryBg, iconBg: colors.secondary, iconColor: '#ffffff' },
+  };
+  return map[variant];
 };
 
-export default function StatCard({ title, value, icon, variant = 'primary', trend, subtitle }: StatCardProps) {
-  const { colors, isDark } = useTheme();
-  const cfg = variantConfig[variant];
+export default React.memo(function StatCard({ title, value, icon, variant = 'primary', trend, subtitle }: StatCardProps) {
+  const { colors } = useTheme();
+  const cfg = getVariantConfig(colors, variant);
 
   return (
     <View style={[styles.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
@@ -39,16 +43,16 @@ export default function StatCard({ title, value, icon, variant = 'primary', tren
           <Feather
             name={trend >= 0 ? 'trending-up' : 'trending-down'}
             size={12}
-            color={trend >= 0 ? '#10b981' : '#ef4444'}
+            color={trend >= 0 ? colors.success : colors.danger}
           />
-          <Text style={[styles.trendText, { color: trend >= 0 ? '#10b981' : '#ef4444' }]}>
+          <Text style={[styles.trendText, { color: trend >= 0 ? colors.success : colors.danger }]}>
             {Math.abs(trend).toFixed(1)}%
           </Text>
         </View>
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

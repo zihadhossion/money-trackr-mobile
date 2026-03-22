@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -78,7 +78,7 @@ export function BiometricProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.remove();
   }, []);
 
-  const setBiometricEnabledFn = async (enabled: boolean): Promise<boolean> => {
+  const setBiometricEnabledFn = useCallback(async (enabled: boolean): Promise<boolean> => {
     if (enabled) {
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Verify to enable biometric login',
@@ -96,9 +96,9 @@ export function BiometricProvider({ children }: { children: React.ReactNode }) {
       setIsLocked(false);
       return true;
     }
-  };
+  }, []);
 
-  const unlockWithBiometric = async (): Promise<boolean> => {
+  const unlockWithBiometric = useCallback(async (): Promise<boolean> => {
     const result = await LocalAuthentication.authenticateAsync({
       promptMessage: 'Unlock Money Trackr',
       cancelLabel: 'Cancel',
@@ -108,20 +108,20 @@ export function BiometricProvider({ children }: { children: React.ReactNode }) {
       return true;
     }
     return false;
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    isBiometricAvailable,
+    isBiometricEnabled,
+    biometricType,
+    isLocked,
+    loading,
+    setBiometricEnabled: setBiometricEnabledFn,
+    unlockWithBiometric,
+  }), [isBiometricAvailable, isBiometricEnabled, biometricType, isLocked, loading, setBiometricEnabledFn, unlockWithBiometric]);
 
   return (
-    <BiometricContext.Provider
-      value={{
-        isBiometricAvailable,
-        isBiometricEnabled,
-        biometricType,
-        isLocked,
-        loading,
-        setBiometricEnabled: setBiometricEnabledFn,
-        unlockWithBiometric,
-      }}
-    >
+    <BiometricContext.Provider value={value}>
       {children}
     </BiometricContext.Provider>
   );

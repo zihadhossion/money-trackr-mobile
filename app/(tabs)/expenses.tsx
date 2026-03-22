@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   Alert, RefreshControl, ActivityIndicator,
@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { useBottomSheet } from '../../src/hooks/useBottomSheet';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
 import TransactionItem from '../../src/components/ui/TransactionItem';
 import EmptyState from '../../src/components/ui/EmptyState';
@@ -15,26 +16,25 @@ import { expenseService } from '../../src/services/expenseService';
 import { categoryService } from '../../src/services/categoryService';
 import { getMonthDateRange } from '../../src/utils/date';
 import { formatCurrency } from '../../src/utils/currency';
+import { screenStyles } from '../../src/theme/screenStyles';
 import type { Expense, Category } from '../../src/types';
 
 export default function ExpensesScreen() {
   const { colors } = useTheme();
-  const s = styles(colors);
-  const now = new Date();
+  const ss = useMemo(() => screenStyles(colors), [colors]);
+  const s = useMemo(() => localStyles(colors), [colors]);
 
-  const [month, setMonth] = useState(now.getMonth() + 1);
-  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
+  const [year, setYear] = useState(() => new Date().getFullYear());
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [editing, setEditing] = useState<Expense | null>(null);
   const [showCatFilter, setShowCatFilter] = useState(false);
 
-  const sheetRef = useRef<BottomSheet>(null);
-  const snapPoints = ['90%'];
+  const { sheetRef, snapPoints, editing, openAdd, openEdit, closeSheet } = useBottomSheet<Expense>();
 
   const total = expenses.reduce((sum, e) => sum + e.amount, 0);
 
@@ -56,10 +56,6 @@ export default function ExpensesScreen() {
   }, [year, month, filterCategory]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-
-  const openAdd = () => { setEditing(null); sheetRef.current?.expand(); };
-  const openEdit = (item: Expense) => { setEditing(item); sheetRef.current?.expand(); };
-  const closeSheet = () => { sheetRef.current?.close(); setEditing(null); };
 
   const handleSubmit = async (data: Omit<Expense, '_id'>) => {
     setSaving(true);
@@ -101,20 +97,20 @@ export default function ExpensesScreen() {
   const expenseCats = categories.filter((c) => c.type === 'expense');
 
   return (
-    <SafeAreaView style={[s.safe, { backgroundColor: colors.bgSecondary }]}>
-      <View style={s.header}>
+    <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
+      <View style={[ss.header, { alignItems: 'flex-start' }]}>
         <View>
-          <Text style={[s.title, { color: colors.textPrimary }]}>Expenses</Text>
-          <Text style={[s.total, { color: '#ef4444' }]}>{formatCurrency(total)}</Text>
+          <Text style={[ss.title, { color: colors.textPrimary }]}>Expenses</Text>
+          <Text style={[s.total, { color: colors.danger }]}>{formatCurrency(total)}</Text>
         </View>
-        <TouchableOpacity style={[s.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
+        <TouchableOpacity style={[ss.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
           <Feather name="plus" size={20} color="#fff" />
-          <Text style={s.addBtnText}>Add</Text>
+          <Text style={ss.addBtnText}>Add</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView
-        contentContainerStyle={s.scroll}
+        contentContainerStyle={ss.scroll}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); }} tintColor={colors.primary} />}
       >
         <MonthYearPicker month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
@@ -175,14 +171,8 @@ export default function ExpensesScreen() {
   );
 }
 
-const styles = (colors: any) => StyleSheet.create({
-  safe: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 16, paddingBottom: 8 },
-  title: { fontSize: 22, fontWeight: '700' },
+const localStyles = (colors: any) => StyleSheet.create({
   total: { fontSize: 16, fontWeight: '600', marginTop: 2 },
-  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 16 },
-  addBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  scroll: { padding: 16, paddingTop: 8, paddingBottom: 100 },
   filterBtn: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderRadius: 10, borderWidth: 1, padding: 10, marginBottom: 8 },
   filterText: { fontSize: 13 },
   dropdown: { borderRadius: 10, borderWidth: 1, overflow: 'hidden', marginBottom: 8 },

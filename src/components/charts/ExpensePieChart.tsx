@@ -1,17 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
 import { useTheme } from '../../contexts/ThemeContext';
+import { PALETTE_COLORS } from '../../theme/colors';
 import type { CategoryData } from '../../types';
-
-const CHART_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f43f5e', '#84cc16'];
 
 interface ExpensePieChartProps {
   data: CategoryData[];
   currency?: string;
 }
 
-export default function ExpensePieChart({ data, currency = '৳' }: ExpensePieChartProps) {
+export default React.memo(function ExpensePieChart({ data, currency = '৳' }: ExpensePieChartProps) {
   const { colors } = useTheme();
 
   if (!data || data.length === 0) {
@@ -24,7 +23,7 @@ export default function ExpensePieChart({ data, currency = '৳' }: ExpensePieCh
 
   const chartData = data.map((item, i) => ({
     value: item.total,
-    color: CHART_COLORS[i % CHART_COLORS.length],
+    color: PALETTE_COLORS[i % PALETTE_COLORS.length],
     text: `${item.percentage.toFixed(0)}%`,
   }));
 
@@ -46,7 +45,7 @@ export default function ExpensePieChart({ data, currency = '৳' }: ExpensePieCh
       <View style={styles.legend}>
         {data.map((item, i) => (
           <View key={item.category} style={styles.legendRow}>
-            <View style={[styles.legendDot, { backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }]} />
+            <View style={[styles.legendDot, { backgroundColor: PALETTE_COLORS[i % PALETTE_COLORS.length] }]} />
             <Text style={[styles.legendLabel, { color: colors.textSecondary }]} numberOfLines={1}>{item.category}</Text>
             <Text style={[styles.legendAmount, { color: colors.textPrimary }]}>
               {currency}{item.total.toLocaleString()} ({item.percentage.toFixed(1)}%)
@@ -56,7 +55,7 @@ export default function ExpensePieChart({ data, currency = '৳' }: ExpensePieCh
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: { alignItems: 'center', gap: 16 },

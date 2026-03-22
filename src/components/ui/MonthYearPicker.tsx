@@ -11,7 +11,7 @@ interface MonthYearPickerProps {
   onYearChange: (y: number) => void;
 }
 
-export default function MonthYearPicker({ month, year, onMonthChange, onYearChange }: MonthYearPickerProps) {
+export default React.memo(function MonthYearPicker({ month, year, onMonthChange, onYearChange }: MonthYearPickerProps) {
   const { colors } = useTheme();
 
   return (
@@ -44,7 +44,7 @@ export default function MonthYearPicker({ month, year, onMonthChange, onYearChan
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: { gap: 10, marginBottom: 12 },

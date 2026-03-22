@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   TextInput, Alert, ActivityIndicator, Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -16,7 +15,7 @@ export default function SettingsScreen() {
   const { colors, theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { isBiometricAvailable, isBiometricEnabled, setBiometricEnabled, biometricType } = useBiometric();
-  const s = styles(colors);
+  const s = useMemo(() => styles(colors), [colors]);
 
   const [settings, setSettings] = useState<Settings>({ currency: 'BDT', monthlyBudget: 0 });
   const [budget, setBudget] = useState('');
@@ -163,9 +162,9 @@ export default function SettingsScreen() {
         </View>
 
         {/* Sign out */}
-        <TouchableOpacity style={[s.signOutBtn, { borderColor: '#ef4444' }]} onPress={handleSignOut}>
-          <Feather name="log-out" size={18} color="#ef4444" />
-          <Text style={s.signOutText}>Sign Out</Text>
+        <TouchableOpacity style={[s.signOutBtn, { borderColor: colors.danger }]} onPress={handleSignOut}>
+          <Feather name="log-out" size={18} color={colors.danger} />
+          <Text style={[s.signOutText, { color: colors.danger }]}>Sign Out</Text>
         </TouchableOpacity>
 
         <Text style={[s.version, { color: colors.textMuted }]}>Money Trackr v1.0.0</Text>
@@ -201,6 +200,6 @@ const styles = (colors: any) => StyleSheet.create({
   saveBtn: { borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
   saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   signOutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 12, borderWidth: 1.5, paddingVertical: 14 },
-  signOutText: { color: '#ef4444', fontSize: 15, fontWeight: '700' },
+  signOutText: { fontSize: 15, fontWeight: '700' },
   version: { textAlign: 'center', fontSize: 12 },
 });

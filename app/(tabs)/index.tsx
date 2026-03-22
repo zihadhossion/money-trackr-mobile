@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, ActivityIndicator,
   TouchableOpacity, RefreshControl,
@@ -8,6 +8,7 @@ import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
 import StatCard from '../../src/components/ui/StatCard';
+import LendingSummaryCards from '../../src/components/ui/LendingSummaryCards';
 import ExpensePieChart from '../../src/components/charts/ExpensePieChart';
 import TrendsBarChart from '../../src/components/charts/TrendsBarChart';
 import { dashboardService } from '../../src/services/dashboardService';
@@ -18,11 +19,10 @@ import type { Overview, CategoryData, TrendData, LendingSummary } from '../../sr
 export default function DashboardScreen() {
   const { colors } = useTheme();
   const { user } = useAuth();
-  const s = styles(colors);
+  const s = useMemo(() => styles(colors), [colors]);
 
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
+  const [currentYear] = useState(() => new Date().getFullYear());
+  const [currentMonth] = useState(() => new Date().getMonth() + 1);
 
   const [overview, setOverview] = useState<Overview | null>(null);
   const [expensesByCategory, setExpensesByCategory] = useState<CategoryData[]>([]);
@@ -86,9 +86,9 @@ export default function DashboardScreen() {
 
         {/* Budget alert */}
         {budgetPct >= 80 && (
-          <View style={[s.alert, { backgroundColor: budgetPct >= 100 ? '#fee2e2' : '#fef3c7' }]}>
-            <Feather name="alert-triangle" size={16} color={budgetPct >= 100 ? '#ef4444' : '#f59e0b'} />
-            <Text style={[s.alertText, { color: budgetPct >= 100 ? '#991b1b' : '#92400e' }]}>
+          <View style={[s.alert, { backgroundColor: budgetPct >= 100 ? colors.dangerBg : colors.warningBg }]}>
+            <Feather name="alert-triangle" size={16} color={budgetPct >= 100 ? colors.danger : colors.warning} />
+            <Text style={[s.alertText, { color: budgetPct >= 100 ? colors.dangerText : colors.warningText }]}>
               {budgetPct >= 100
                 ? `Budget exceeded! You've spent ${budgetPct.toFixed(0)}% of your monthly budget.`
                 : `Budget warning: ${budgetPct.toFixed(0)}% of your monthly budget used.`}
@@ -111,19 +111,7 @@ export default function DashboardScreen() {
         </View>
 
         {/* Lending summary */}
-        <View style={s.cardRow}>
-          <View style={[s.lendingCard, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-            <Feather name="arrow-up-right" size={18} color="#10b981" />
-            <Text style={[s.lendingLabel, { color: colors.textMuted }]}>Total Lent</Text>
-            <Text style={[s.lendingAmount, { color: '#10b981' }]}>{formatCurrency(lendingSummary.totalLent)}</Text>
-          </View>
-          <View style={s.cardGap} />
-          <View style={[s.lendingCard, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-            <Feather name="arrow-down-left" size={18} color="#ef4444" />
-            <Text style={[s.lendingLabel, { color: colors.textMuted }]}>Total Borrowed</Text>
-            <Text style={[s.lendingAmount, { color: '#ef4444' }]}>{formatCurrency(lendingSummary.totalBorrowed)}</Text>
-          </View>
-        </View>
+        <LendingSummaryCards summary={lendingSummary} />
 
         {/* Pie chart */}
         <View style={[s.chartCard, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
@@ -154,9 +142,6 @@ const styles = (colors: any) => StyleSheet.create({
   cardGrid: { gap: 12 },
   cardRow: { flexDirection: 'row' },
   cardGap: { width: 12 },
-  lendingCard: { flex: 1, borderRadius: 14, padding: 14, borderWidth: 1, gap: 4 },
-  lendingLabel: { fontSize: 12 },
-  lendingAmount: { fontSize: 18, fontWeight: '700' },
   chartCard: { borderRadius: 16, padding: 16, borderWidth: 1 },
   chartTitle: { fontSize: 16, fontWeight: '700', marginBottom: 16 },
 });

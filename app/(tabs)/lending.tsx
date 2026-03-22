@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   Alert, RefreshControl, ActivityIndicator,
@@ -7,36 +7,40 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { useBottomSheet } from '../../src/hooks/useBottomSheet';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
 import LendingItem from '../../src/components/ui/LendingItem';
+import LendingSummaryCards from '../../src/components/ui/LendingSummaryCards';
 import EmptyState from '../../src/components/ui/EmptyState';
 import LendingForm from '../../src/components/forms/LendingForm';
 import RepaymentForm from '../../src/components/forms/RepaymentForm';
 import { lendingService } from '../../src/services/lendingService';
 import { getMonthDateRange } from '../../src/utils/date';
-import { formatCurrency } from '../../src/utils/currency';
+import { screenStyles } from '../../src/theme/screenStyles';
 import type { Lending, LendingSummary } from '../../src/types';
 
 type SheetMode = 'form' | 'repayment' | null;
 
 export default function LendingScreen() {
   const { colors } = useTheme();
-  const s = styles(colors);
-  const now = new Date();
+  const ss = useMemo(() => screenStyles(colors), [colors]);
 
-  const [month, setMonth] = useState(now.getMonth() + 1);
-  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
+  const [year, setYear] = useState(() => new Date().getFullYear());
   const [lendings, setLendings] = useState<Lending[]>([]);
   const [summary, setSummary] = useState<LendingSummary>({ totalLent: 0, totalBorrowed: 0 });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [editing, setEditing] = useState<Lending | null>(null);
   const [repaying, setRepaying] = useState<Lending | null>(null);
   const [sheetMode, setSheetMode] = useState<SheetMode>(null);
 
-  const sheetRef = useRef<BottomSheet>(null);
-  const snapPoints = ['90%'];
+  const { sheetRef, snapPoints, editing, openAdd: baseOpenAdd, openEdit: baseOpenEdit, closeSheet: baseCloseSheet } = useBottomSheet<Lending>();
+
+  const openAdd = () => { baseOpenAdd(); setSheetMode('form'); };
+  const openEdit = (item: Lending) => { baseOpenEdit(item); setSheetMode('form'); };
+  const openRepay = (item: Lending) => { setRepaying(item); setSheetMode('repayment'); sheetRef.current?.expand(); };
+  const closeSheet = () => { baseCloseSheet(); setRepaying(null); setSheetMode(null); };
 
   const fetchData = useCallback(async () => {
     const { startDate, endDate } = getMonthDateRange(year, month);
@@ -56,11 +60,6 @@ export default function LendingScreen() {
   }, [year, month]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-
-  const openAdd = () => { setEditing(null); setSheetMode('form'); sheetRef.current?.expand(); };
-  const openEdit = (item: Lending) => { setEditing(item); setSheetMode('form'); sheetRef.current?.expand(); };
-  const openRepay = (item: Lending) => { setRepaying(item); setSheetMode('repayment'); sheetRef.current?.expand(); };
-  const closeSheet = () => { sheetRef.current?.close(); setEditing(null); setRepaying(null); setSheetMode(null); };
 
   const handleSubmit = async (data: Omit<Lending, '_id'>) => {
     setSaving(true);
@@ -115,34 +114,23 @@ export default function LendingScreen() {
   };
 
   return (
-    <SafeAreaView style={[s.safe, { backgroundColor: colors.bgSecondary }]}>
-      <View style={s.header}>
-        <Text style={[s.title, { color: colors.textPrimary }]}>Lending</Text>
-        <TouchableOpacity style={[s.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
+    <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
+      <View style={ss.header}>
+        <Text style={[ss.title, { color: colors.textPrimary }]}>Lending</Text>
+        <TouchableOpacity style={[ss.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
           <Feather name="plus" size={20} color="#fff" />
-          <Text style={s.addBtnText}>Add</Text>
+          <Text style={ss.addBtnText}>Add</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView
-        contentContainerStyle={s.scroll}
+        contentContainerStyle={ss.scroll}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); }} tintColor={colors.primary} />}
       >
         <MonthYearPicker month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
 
         {/* Summary cards */}
-        <View style={s.summaryRow}>
-          <View style={[s.summaryCard, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-            <Feather name="arrow-up-right" size={16} color="#10b981" />
-            <Text style={[s.summaryLabel, { color: colors.textMuted }]}>Total Lent</Text>
-            <Text style={[s.summaryAmount, { color: '#10b981' }]}>{formatCurrency(summary.totalLent)}</Text>
-          </View>
-          <View style={[s.summaryCard, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-            <Feather name="arrow-down-left" size={16} color="#ef4444" />
-            <Text style={[s.summaryLabel, { color: colors.textMuted }]}>Total Borrowed</Text>
-            <Text style={[s.summaryAmount, { color: '#ef4444' }]}>{formatCurrency(summary.totalBorrowed)}</Text>
-          </View>
-        </View>
+        <LendingSummaryCards summary={summary} />
 
         {loading ? (
           <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
@@ -185,16 +173,3 @@ export default function LendingScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = (colors: any) => StyleSheet.create({
-  safe: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, paddingBottom: 8 },
-  title: { fontSize: 22, fontWeight: '700' },
-  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 16 },
-  addBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  scroll: { padding: 16, paddingTop: 8, paddingBottom: 100 },
-  summaryRow: { flexDirection: 'row', gap: 12, marginBottom: 12 },
-  summaryCard: { flex: 1, borderRadius: 14, padding: 14, borderWidth: 1, gap: 4 },
-  summaryLabel: { fontSize: 12 },
-  summaryAmount: { fontSize: 17, fontWeight: '700' },
-});

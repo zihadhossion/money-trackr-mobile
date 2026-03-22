@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { formStyles } from '../../theme/formStyles';
 
 interface RepaymentFormProps {
   personName: string;
@@ -13,7 +14,7 @@ interface RepaymentFormProps {
 
 export default function RepaymentForm({ personName, remainingAmount, currency = '৳', onSubmit, onCancel, loading }: RepaymentFormProps) {
   const { colors } = useTheme();
-  const s = styles(colors);
+  const fs = useMemo(() => formStyles(colors), [colors]);
   const [amount, setAmount] = useState('');
 
   async function handleSubmit() {
@@ -24,39 +25,23 @@ export default function RepaymentForm({ personName, remainingAmount, currency = 
   }
 
   return (
-    <View style={s.container}>
-      <Text style={s.title}>Record Repayment</Text>
-      <Text style={s.subtitle}>From: {personName}</Text>
-      <Text style={s.remaining}>Remaining: {currency}{remainingAmount.toLocaleString()}</Text>
+    <View style={fs.container}>
+      <Text style={fs.title}>Record Repayment</Text>
+      <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 2 }}>From: {personName}</Text>
+      <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 20 }}>Remaining: {currency}{remainingAmount.toLocaleString()}</Text>
 
-      <Text style={s.label}>Repayment Amount *</Text>
-      <View style={s.inputRow}>
-        <Text style={s.symbol}>{currency}</Text>
-        <TextInput style={s.input} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} autoFocus />
+      <Text style={fs.label}>Repayment Amount *</Text>
+      <View style={fs.inputRow}>
+        <Text style={fs.currencySymbol}>{currency}</Text>
+        <TextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} autoFocus />
       </View>
 
-      <View style={s.buttons}>
-        <TouchableOpacity style={s.cancelBtn} onPress={onCancel}><Text style={[s.cancelText, { color: colors.textSecondary }]}>Cancel</Text></TouchableOpacity>
-        <TouchableOpacity style={[s.submitBtn, { backgroundColor: '#10b981' }]} onPress={handleSubmit} disabled={loading}>
-          <Text style={s.submitText}>{loading ? 'Saving...' : 'Record'}</Text>
+      <View style={[fs.buttons, { marginBottom: 0 }]}>
+        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>Cancel</Text></TouchableOpacity>
+        <TouchableOpacity style={[fs.submitBtn, { backgroundColor: colors.success }]} onPress={handleSubmit} disabled={loading}>
+          <Text style={fs.submitText}>{loading ? 'Saving...' : 'Record'}</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
-
-const styles = (colors: any) => StyleSheet.create({
-  container: { padding: 20 },
-  title: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 6 },
-  subtitle: { fontSize: 14, color: colors.textSecondary, marginBottom: 2 },
-  remaining: { fontSize: 13, color: colors.textMuted, marginBottom: 20 },
-  label: { fontSize: 13, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 },
-  inputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.borderColor, borderRadius: 10, backgroundColor: colors.bgTertiary, paddingHorizontal: 12 },
-  symbol: { fontSize: 18, color: colors.textMuted, marginRight: 8 },
-  input: { flex: 1, fontSize: 18, color: colors.textPrimary, paddingVertical: 12, fontWeight: '600' },
-  buttons: { flexDirection: 'row', gap: 12, marginTop: 24 },
-  cancelBtn: { flex: 1, borderWidth: 1, borderColor: colors.borderColor, borderRadius: 10, padding: 14, alignItems: 'center' },
-  cancelText: { fontSize: 15, fontWeight: '600' },
-  submitBtn: { flex: 2, borderRadius: 10, padding: 14, alignItems: 'center' },
-  submitText: { fontSize: 15, fontWeight: '600', color: '#fff' },
-});

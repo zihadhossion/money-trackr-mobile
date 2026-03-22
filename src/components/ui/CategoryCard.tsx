@@ -10,7 +10,7 @@ interface CategoryCardProps {
   onDelete?: () => void;
 }
 
-export default function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) {
+export default React.memo(function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) {
   const { colors } = useTheme();
   const canEdit = !category.isDefault;
 
@@ -29,7 +29,7 @@ export default function CategoryCard({ category, onEdit, onDelete }: CategoryCar
           )}
           {onDelete && (
             <TouchableOpacity onPress={onDelete} hitSlop={6}>
-              <Feather name="trash-2" size={13} color="#ef4444" />
+              <Feather name="trash-2" size={13} color={colors.danger} />
             </TouchableOpacity>
           )}
         </View>
@@ -41,7 +41,7 @@ export default function CategoryCard({ category, onEdit, onDelete }: CategoryCar
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

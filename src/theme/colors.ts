@@ -18,6 +18,19 @@ export const lightColors = {
   danger: '#ef4444',
   rose: '#f43f5e',
 
+  // Semantic background variants
+  successBg: '#d1fae5',
+  dangerBg: '#fee2e2',
+  warningBg: '#fef3c7',
+  primaryBg: '#e0e7ff',
+  secondaryBg: '#ede9fe',
+
+  // Status text colors
+  successText: '#065f46',
+  dangerText: '#991b1b',
+  warningText: '#92400e',
+  primaryText: '#3730a3',
+
   // Surface scale
   surface50: '#f8fafc',
   surface100: '#f1f5f9',
@@ -52,6 +65,19 @@ export const darkColors: typeof lightColors = {
   danger: '#ef4444',
   rose: '#f43f5e',
 
+  // Semantic background variants
+  successBg: '#d1fae5',
+  dangerBg: '#fee2e2',
+  warningBg: '#fef3c7',
+  primaryBg: '#e0e7ff',
+  secondaryBg: '#ede9fe',
+
+  // Status text colors
+  successText: '#065f46',
+  dangerText: '#991b1b',
+  warningText: '#92400e',
+  primaryText: '#3730a3',
+
   surface50: '#f8fafc',
   surface100: '#f1f5f9',
   surface200: '#e2e8f0',
@@ -69,3 +95,5 @@ export const darkColors: typeof lightColors = {
 };
 
 export type Colors = typeof lightColors;
+
+export const PALETTE_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f43f5e', '#84cc16'];

@@ -16,14 +16,14 @@ interface TransactionItemProps {
   isIncome?: boolean;
 }
 
-export default function TransactionItem({
+export default React.memo(function TransactionItem({
   icon, category, amount, date, note, currency = '৳', onEdit, onDelete, isIncome = false,
 }: TransactionItemProps) {
   const { colors } = useTheme();
 
   return (
     <View style={[styles.row, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-      <View style={[styles.iconWrap, { backgroundColor: isIncome ? '#d1fae5' : '#fee2e2' }]}>
+      <View style={[styles.iconWrap, { backgroundColor: isIncome ? colors.successBg : colors.dangerBg }]}>
         <Text style={styles.iconText}>{icon}</Text>
       </View>
       <View style={styles.info}>
@@ -32,7 +32,7 @@ export default function TransactionItem({
         <Text style={[styles.date, { color: colors.textMuted }]}>{formatDate(date)}</Text>
       </View>
       <View style={styles.right}>
-        <Text style={[styles.amount, { color: isIncome ? '#10b981' : '#ef4444' }]}>
+        <Text style={[styles.amount, { color: isIncome ? colors.success : colors.danger }]}>
           {isIncome ? '+' : '-'}{currency}{amount.toLocaleString()}
         </Text>
         <View style={styles.actions}>
@@ -43,14 +43,14 @@ export default function TransactionItem({
           )}
           {onDelete && (
             <TouchableOpacity style={styles.actionBtn} onPress={onDelete} hitSlop={8}>
-              <Feather name="trash-2" size={14} color="#ef4444" />
+              <Feather name="trash-2" size={14} color={colors.danger} />
             </TouchableOpacity>
           )}
         </View>
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   row: {

@@ -1,33 +1,34 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
-  Alert, RefreshControl, ActivityIndicator, FlatList,
+  Alert, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { useBottomSheet } from '../../src/hooks/useBottomSheet';
 import CategoryCard from '../../src/components/ui/CategoryCard';
 import CategoryForm from '../../src/components/forms/CategoryForm';
 import EmptyState from '../../src/components/ui/EmptyState';
 import { categoryService } from '../../src/services/categoryService';
+import { screenStyles } from '../../src/theme/screenStyles';
 import type { Category } from '../../src/types';
 
 type TabType = 'expense' | 'income';
 
 export default function CategoriesScreen() {
   const { colors } = useTheme();
-  const s = styles(colors);
+  const ss = useMemo(() => screenStyles(colors), [colors]);
+  const s = localStyles;
 
   const [tab, setTab] = useState<TabType>('expense');
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [editing, setEditing] = useState<Category | null>(null);
 
-  const sheetRef = useRef<BottomSheet>(null);
-  const snapPoints = ['90%'];
+  const { sheetRef, snapPoints, editing, openAdd, openEdit, closeSheet } = useBottomSheet<Category>();
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -44,10 +45,6 @@ export default function CategoriesScreen() {
   useEffect(() => { fetchCategories(); }, [fetchCategories]);
 
   const filtered = categories.filter((c) => c.type === tab);
-
-  const openAdd = () => { setEditing(null); sheetRef.current?.expand(); };
-  const openEdit = (cat: Category) => { setEditing(cat); sheetRef.current?.expand(); };
-  const closeSheet = () => { sheetRef.current?.close(); setEditing(null); };
 
   const handleSubmit = async (data: Omit<Category, '_id' | 'isDefault'>) => {
     setSaving(true);
@@ -85,12 +82,12 @@ export default function CategoriesScreen() {
   };
 
   return (
-    <SafeAreaView style={[s.safe, { backgroundColor: colors.bgSecondary }]}>
-      <View style={s.header}>
-        <Text style={[s.title, { color: colors.textPrimary }]}>Categories</Text>
-        <TouchableOpacity style={[s.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
+    <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
+      <View style={[ss.header, { paddingBottom: 12 }]}>
+        <Text style={[ss.title, { color: colors.textPrimary }]}>Categories</Text>
+        <TouchableOpacity style={[ss.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
           <Feather name="plus" size={20} color="#fff" />
-          <Text style={s.addBtnText}>Add</Text>
+          <Text style={ss.addBtnText}>Add</Text>
         </TouchableOpacity>
       </View>
 
@@ -110,7 +107,7 @@ export default function CategoriesScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={s.scroll}
+        contentContainerStyle={ss.scroll}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchCategories(); }} tintColor={colors.primary} />}
       >
         {loading ? (
@@ -146,16 +143,10 @@ export default function CategoriesScreen() {
   );
 }
 
-const styles = (colors: any) => StyleSheet.create({
-  safe: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, paddingBottom: 12 },
-  title: { fontSize: 22, fontWeight: '700' },
-  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 16 },
-  addBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+const localStyles = StyleSheet.create({
   tabs: { flexDirection: 'row', marginHorizontal: 16, borderRadius: 12, borderWidth: 1, overflow: 'hidden', marginBottom: 8 },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
   tabText: { fontSize: 14, fontWeight: '600' },
-  scroll: { padding: 16, paddingTop: 8, paddingBottom: 100 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   gridItem: { width: '30%' },
 });
