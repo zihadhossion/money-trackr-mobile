@@ -1,3 +1,4 @@
+import '../src/locales';
 import { useState, useEffect } from 'react';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -5,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider } from '../src/contexts/ThemeContext';
 import { AuthProvider } from '../src/contexts/AuthContext';
+import { LanguageProvider } from '../src/contexts/LanguageContext';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { useAuth } from '../src/contexts/AuthContext';
 import SplashAnimation from '../src/components/ui/SplashAnimation';
@@ -26,6 +28,7 @@ function InnerLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="guide" options={{ headerShown: false }} />
       </Stack>
       {showSplash && (
         <SplashAnimation
@@ -40,11 +43,13 @@ function InnerLayout() {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
-        <AuthProvider>
-          <InnerLayout />
-        </AuthProvider>
-      </ThemeProvider>
+      <LanguageProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <InnerLayout />
+          </AuthProvider>
+        </ThemeProvider>
+      </LanguageProvider>
     </GestureHandlerRootView>
   );
 }

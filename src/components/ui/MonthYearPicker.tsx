@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
-import { MONTHS_SHORT } from '../../utils/date';
 
 interface MonthYearPickerProps {
   month: number;
@@ -13,12 +13,14 @@ interface MonthYearPickerProps {
 
 export default React.memo(function MonthYearPicker({ month, year, onMonthChange, onYearChange }: MonthYearPickerProps) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const monthsShort = t('months_short', { returnObjects: true }) as string[];
 
   return (
     <View style={styles.container}>
       {/* Month selector */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.monthRow}>
-        {MONTHS_SHORT.map((m, i) => {
+        {monthsShort.map((m, i) => {
           const isActive = i + 1 === month;
           return (
             <TouchableOpacity

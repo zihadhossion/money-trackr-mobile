@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { formStyles } from '../../theme/formStyles';
 import type { Income, Category } from '../../types';
@@ -17,6 +18,7 @@ interface IncomeFormProps {
 
 export default function IncomeForm({ initial, categories, onSubmit, onCancel, loading }: IncomeFormProps) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const fs = useMemo(() => formStyles(colors), [colors]);
 
   const [amount, setAmount] = useState(initial?.amount?.toString() ?? '');
@@ -30,17 +32,17 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
   const selectedCat = categories.find((c) => c.name === category);
 
   async function handleSubmit() {
-    if (!amount || isNaN(Number(amount))) return Alert.alert('Validation', 'Enter a valid amount');
-    if (!category) return Alert.alert('Validation', 'Select a category');
+    if (!amount || isNaN(Number(amount))) return Alert.alert(t('common.validation'), t('validation.valid_amount'));
+    if (!category) return Alert.alert(t('common.validation'), t('validation.select_category'));
     await onSubmit({ amount: Number(amount), category, source, notes, date: toISODate(date) });
   }
 
   return (
     <ScrollView style={fs.container} keyboardShouldPersistTaps="handled">
-      <Text style={fs.title}>{initial?._id ? 'Edit Income' : 'Add Income'}</Text>
+      <Text style={fs.title}>{initial?._id ? t('income.edit') : t('income.add')}</Text>
 
       {/* Amount */}
-      <Text style={fs.label}>Amount *</Text>
+      <Text style={fs.label}>{t('common.amount_required')}</Text>
       <View style={fs.inputRow}>
         <Text style={fs.currencySymbol}>৳</Text>
         <TextInput
@@ -54,10 +56,10 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
       </View>
 
       {/* Category */}
-      <Text style={fs.label}>Category *</Text>
+      <Text style={fs.label}>{t('common.category_required')}</Text>
       <TouchableOpacity style={fs.select} onPress={() => setShowCategoryPicker(!showCategoryPicker)}>
         <Text style={[fs.selectText, { color: category ? colors.textPrimary : colors.textMuted }]}>
-          {selectedCat ? `${selectedCat.icon} ${selectedCat.name}` : 'Select category'}
+          {selectedCat ? `${selectedCat.icon} ${selectedCat.name}` : t('common.select_category')}
         </Text>
         <Feather name="chevron-down" size={16} color={colors.textMuted} />
       </TouchableOpacity>
@@ -72,11 +74,11 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
       )}
 
       {/* Source */}
-      <Text style={fs.label}>Source</Text>
-      <TextInput style={fs.input} value={source} onChangeText={setSource} placeholder="e.g. Salary, Freelance" placeholderTextColor={colors.textMuted} />
+      <Text style={fs.label}>{t('common.source')}</Text>
+      <TextInput style={fs.input} value={source} onChangeText={setSource} placeholder={t('common.source_placeholder')} placeholderTextColor={colors.textMuted} />
 
       {/* Date */}
-      <Text style={fs.label}>Date</Text>
+      <Text style={fs.label}>{t('common.date')}</Text>
       <TouchableOpacity style={fs.select} onPress={() => setShowDatePicker(true)}>
         <Text style={[fs.selectText, { color: colors.textPrimary }]}>{toISODate(date)}</Text>
         <Feather name="calendar" size={16} color={colors.textMuted} />
@@ -86,14 +88,14 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
       )}
 
       {/* Notes */}
-      <Text style={fs.label}>Notes</Text>
-      <TextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder="Optional notes" placeholderTextColor={colors.textMuted} />
+      <Text style={fs.label}>{t('common.notes')}</Text>
+      <TextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} />
 
       {/* Buttons */}
       <View style={fs.buttons}>
-        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>Cancel</Text></TouchableOpacity>
+        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
         <TouchableOpacity style={[fs.submitBtn, { backgroundColor: colors.primary }]} onPress={handleSubmit} disabled={loading}>
-          <Text style={fs.submitText}>{loading ? 'Saving...' : 'Save'}</Text>
+          <Text style={fs.submitText}>{loading ? t('common.saving') : t('common.save')}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
-import { formatDate } from '../../utils/date';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { formatDate, DATE_FNS_LOCALES } from '../../utils/date';
 
 interface TransactionItemProps {
   icon: string;
@@ -20,6 +21,7 @@ export default React.memo(function TransactionItem({
   icon, category, amount, date, note, currency = '৳', onEdit, onDelete, isIncome = false,
 }: TransactionItemProps) {
   const { colors } = useTheme();
+  const { language } = useLanguage();
 
   return (
     <View style={[styles.row, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
@@ -29,7 +31,7 @@ export default React.memo(function TransactionItem({
       <View style={styles.info}>
         <Text style={[styles.category, { color: colors.textPrimary }]}>{category}</Text>
         {note ? <Text style={[styles.note, { color: colors.textMuted }]} numberOfLines={1}>{note}</Text> : null}
-        <Text style={[styles.date, { color: colors.textMuted }]}>{formatDate(date)}</Text>
+        <Text style={[styles.date, { color: colors.textMuted }]}>{formatDate(date, DATE_FNS_LOCALES[language])}</Text>
       </View>
       <View style={styles.right}>
         <Text style={[styles.amount, { color: isIncome ? colors.success : colors.danger }]}>

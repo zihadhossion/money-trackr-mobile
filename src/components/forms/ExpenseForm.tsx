@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Switch, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { formStyles } from '../../theme/formStyles';
 import type { Expense, Category } from '../../types';
@@ -17,6 +18,7 @@ interface ExpenseFormProps {
 
 export default function ExpenseForm({ initial, categories, onSubmit, onCancel, loading }: ExpenseFormProps) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const fs = useMemo(() => formStyles(colors), [colors]);
   const s = useMemo(() => localStyles(colors), [colors]);
 
@@ -32,25 +34,25 @@ export default function ExpenseForm({ initial, categories, onSubmit, onCancel, l
   const selectedCat = expenseCategories.find((c) => c.name === category);
 
   async function handleSubmit() {
-    if (!amount || isNaN(Number(amount))) return Alert.alert('Validation', 'Enter a valid amount');
-    if (!category) return Alert.alert('Validation', 'Select a category');
+    if (!amount || isNaN(Number(amount))) return Alert.alert(t('common.validation'), t('validation.valid_amount'));
+    if (!category) return Alert.alert(t('common.validation'), t('validation.select_category'));
     await onSubmit({ amount: Number(amount), category, notes, isRecurring, date: toISODate(date) });
   }
 
   return (
     <ScrollView style={fs.container} keyboardShouldPersistTaps="handled">
-      <Text style={fs.title}>{initial?._id ? 'Edit Expense' : 'Add Expense'}</Text>
+      <Text style={fs.title}>{initial?._id ? t('expenses.edit') : t('expenses.add')}</Text>
 
-      <Text style={fs.label}>Amount *</Text>
+      <Text style={fs.label}>{t('common.amount_required')}</Text>
       <View style={fs.inputRow}>
         <Text style={fs.currencySymbol}>৳</Text>
         <TextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} />
       </View>
 
-      <Text style={fs.label}>Category *</Text>
+      <Text style={fs.label}>{t('common.category_required')}</Text>
       <TouchableOpacity style={fs.select} onPress={() => setShowCategoryPicker(!showCategoryPicker)}>
         <Text style={[fs.selectText, { color: category ? colors.textPrimary : colors.textMuted }]}>
-          {selectedCat ? `${selectedCat.icon} ${selectedCat.name}` : 'Select category'}
+          {selectedCat ? `${selectedCat.icon} ${selectedCat.name}` : t('common.select_category')}
         </Text>
         <Feather name="chevron-down" size={16} color={colors.textMuted} />
       </TouchableOpacity>
@@ -64,7 +66,7 @@ export default function ExpenseForm({ initial, categories, onSubmit, onCancel, l
         </View>
       )}
 
-      <Text style={fs.label}>Date</Text>
+      <Text style={fs.label}>{t('common.date')}</Text>
       <TouchableOpacity style={fs.select} onPress={() => setShowDatePicker(true)}>
         <Text style={[fs.selectText, { color: colors.textPrimary }]}>{toISODate(date)}</Text>
         <Feather name="calendar" size={16} color={colors.textMuted} />
@@ -73,18 +75,18 @@ export default function ExpenseForm({ initial, categories, onSubmit, onCancel, l
         <DateTimePicker value={date} mode="date" display="default" onChange={(_, d) => { setShowDatePicker(false); if (d) setDate(d); }} />
       )}
 
-      <Text style={fs.label}>Notes</Text>
-      <TextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder="Optional notes" placeholderTextColor={colors.textMuted} />
+      <Text style={fs.label}>{t('common.notes')}</Text>
+      <TextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} />
 
       <View style={s.switchRow}>
-        <Text style={[fs.label, { marginTop: 0, marginBottom: 0 }]}>Recurring expense</Text>
+        <Text style={[fs.label, { marginTop: 0, marginBottom: 0 }]}>{t('common.recurring_expense')}</Text>
         <Switch value={isRecurring} onValueChange={setIsRecurring} trackColor={{ true: colors.primary }} />
       </View>
 
       <View style={fs.buttons}>
-        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>Cancel</Text></TouchableOpacity>
+        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
         <TouchableOpacity style={[fs.submitBtn, { backgroundColor: colors.primary }]} onPress={handleSubmit} disabled={loading}>
-          <Text style={fs.submitText}>{loading ? 'Saving...' : 'Save'}</Text>
+          <Text style={fs.submitText}>{loading ? t('common.saving') : t('common.save')}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

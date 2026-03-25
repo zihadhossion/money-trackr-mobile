@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
 import StatCard from '../../src/components/ui/StatCard';
@@ -19,6 +20,7 @@ import type { Overview, CategoryData, TrendData, LendingSummary } from '../../sr
 export default function DashboardScreen() {
   const { colors } = useTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const s = useMemo(() => styles(colors), [colors]);
 
   const [currentYear] = useState(() => new Date().getFullYear());
@@ -76,7 +78,7 @@ export default function DashboardScreen() {
         {/* Header */}
         <View style={s.header}>
           <View>
-            <Text style={[s.greeting, { color: colors.textMuted }]}>Welcome back,</Text>
+            <Text style={[s.greeting, { color: colors.textMuted }]}>{t('dashboard.welcome_back')}</Text>
             <Text style={[s.name, { color: colors.textPrimary }]}>{user?.displayName ?? 'User'}</Text>
           </View>
         </View>
@@ -87,8 +89,8 @@ export default function DashboardScreen() {
             <Feather name="alert-triangle" size={16} color={budgetPct >= 100 ? colors.danger : colors.warning} />
             <Text style={[s.alertText, { color: budgetPct >= 100 ? colors.dangerText : colors.warningText }]}>
               {budgetPct >= 100
-                ? `Budget exceeded! You've spent ${budgetPct.toFixed(0)}% of your monthly budget.`
-                : `Budget warning: ${budgetPct.toFixed(0)}% of your monthly budget used.`}
+                ? t('dashboard.budget_exceeded', { pct: budgetPct.toFixed(0) })
+                : t('dashboard.budget_warning', { pct: budgetPct.toFixed(0) })}
             </Text>
           </View>
         )}
@@ -96,14 +98,14 @@ export default function DashboardScreen() {
         {/* Stat cards 2×2 grid */}
         <View style={s.cardGrid}>
           <View style={s.cardRow}>
-            <StatCard title="Total Income" value={formatCurrency(overview?.totalIncome ?? 0)} icon="trending-up" variant="success" />
+            <StatCard title={t('dashboard.total_income')} value={formatCurrency(overview?.totalIncome ?? 0)} icon="trending-up" variant="success" />
             <View style={s.cardGap} />
-            <StatCard title="Total Expenses" value={formatCurrency(overview?.totalExpenses ?? 0)} icon="trending-down" variant="danger" />
+            <StatCard title={t('dashboard.total_expenses')} value={formatCurrency(overview?.totalExpenses ?? 0)} icon="trending-down" variant="danger" />
           </View>
           <View style={s.cardRow}>
-            <StatCard title="Balance" value={formatCurrency(overview?.balance ?? 0)} icon="dollar-sign" variant="primary" />
+            <StatCard title={t('dashboard.balance')} value={formatCurrency(overview?.balance ?? 0)} icon="dollar-sign" variant="primary" />
             <View style={s.cardGap} />
-            <StatCard title="Budget Used" value={`${budgetPct.toFixed(1)}%`} icon="pie-chart" variant="warning" subtitle={`of ${formatCurrency(overview?.budgetLimit ?? 0)}`} />
+            <StatCard title={t('dashboard.budget_used')} value={`${budgetPct.toFixed(1)}%`} icon="pie-chart" variant="warning" subtitle={t('dashboard.of_budget', { amount: formatCurrency(overview?.budgetLimit ?? 0) })} />
           </View>
         </View>
 
@@ -112,13 +114,13 @@ export default function DashboardScreen() {
 
         {/* Pie chart */}
         <View style={[s.chartCard, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-          <Text style={[s.chartTitle, { color: colors.textPrimary }]}>Expenses by Category</Text>
+          <Text style={[s.chartTitle, { color: colors.textPrimary }]}>{t('dashboard.expenses_by_category')}</Text>
           <ExpensePieChart data={expensesByCategory} />
         </View>
 
         {/* Bar chart */}
         <View style={[s.chartCard, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-          <Text style={[s.chartTitle, { color: colors.textPrimary }]}>Income vs Expenses</Text>
+          <Text style={[s.chartTitle, { color: colors.textPrimary }]}>{t('dashboard.income_vs_expenses')}</Text>
           <TrendsBarChart data={trends} />
         </View>
       </ScrollView>

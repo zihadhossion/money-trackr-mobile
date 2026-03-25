@@ -1,5 +1,6 @@
 import { Redirect, Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
@@ -7,6 +8,7 @@ import { View, ActivityIndicator } from 'react-native';
 export default function TabsLayout() {
   const { colors } = useTheme();
   const { isAuthenticated, loading } = useAuth();
+  const { t } = useTranslation();
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgPrimary }}>
@@ -38,27 +40,27 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'Home', tabBarIcon: ({ color, size }) => <Feather name="home" size={size} color={color} /> }}
+        options={{ title: t('tabs.home'), tabBarIcon: ({ color, size }) => <Feather name="home" size={size} color={color} /> }}
       />
       <Tabs.Screen
         name="income"
-        options={{ title: 'Income', tabBarIcon: ({ color, size }) => <Feather name="trending-up" size={size} color={color} /> }}
+        options={{ title: t('tabs.income'), tabBarIcon: ({ color, size }) => <Feather name="trending-up" size={size} color={color} /> }}
       />
       <Tabs.Screen
         name="expenses"
-        options={{ title: 'Expenses', tabBarIcon: ({ color, size }) => <Feather name="trending-down" size={size} color={color} /> }}
+        options={{ title: t('tabs.expenses'), tabBarIcon: ({ color, size }) => <Feather name="trending-down" size={size} color={color} /> }}
       />
       <Tabs.Screen
         name="lending"
-        options={{ title: 'Lending', tabBarIcon: ({ color, size }) => <Feather name="repeat" size={size} color={color} /> }}
+        options={{ title: t('tabs.lending'), tabBarIcon: ({ color, size }) => <Feather name="repeat" size={size} color={color} /> }}
       />
       <Tabs.Screen
         name="categories"
-        options={{ title: 'Categories', tabBarIcon: ({ color, size }) => <Feather name="grid" size={size} color={color} /> }}
+        options={{ title: t('tabs.categories'), tabBarIcon: ({ color, size }) => <Feather name="grid" size={size} color={color} /> }}
       />
       <Tabs.Screen
         name="settings"
-        options={{ title: 'Settings', tabBarIcon: ({ color, size }) => <Feather name="settings" size={size} color={color} /> }}
+        options={{ title: t('tabs.settings'), tabBarIcon: ({ color, size }) => <Feather name="settings" size={size} color={color} /> }}
       />
     </Tabs>
   );

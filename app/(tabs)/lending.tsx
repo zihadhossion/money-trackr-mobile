@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useBottomSheet } from '../../src/hooks/useBottomSheet';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
@@ -23,6 +24,7 @@ type SheetMode = 'form' | 'repayment' | null;
 
 export default function LendingScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const ss = useMemo(() => screenStyles(colors), [colors]);
 
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
@@ -75,7 +77,7 @@ export default function LendingScreen() {
       // Refresh summary
       lendingService.getSummary().then(setSummary);
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to save');
+      Alert.alert(t('common.error'), e.message || t('common.error'));
     } finally {
       setSaving(false);
     }
@@ -90,23 +92,23 @@ export default function LendingScreen() {
       closeSheet();
       lendingService.getSummary().then(setSummary);
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to record repayment');
+      Alert.alert(t('common.error'), e.message || t('common.error'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = (item: Lending) => {
-    Alert.alert('Delete', `Delete lending record for ${item.personName}?`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('lending.delete_title'), t('lending.delete_message', { name: item.personName }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete', style: 'destructive', onPress: async () => {
+        text: t('common.delete'), style: 'destructive', onPress: async () => {
           try {
             await lendingService.delete(item._id);
             setLendings((prev) => prev.filter((l) => l._id !== item._id));
             lendingService.getSummary().then(setSummary);
           } catch (e: any) {
-            Alert.alert('Error', e.message || 'Failed to delete');
+            Alert.alert(t('common.error'), e.message || t('common.error'));
           }
         },
       },
@@ -116,10 +118,10 @@ export default function LendingScreen() {
   return (
     <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
       <View style={ss.header}>
-        <Text style={[ss.title, { color: colors.textPrimary }]}>Lending</Text>
+        <Text style={[ss.title, { color: colors.textPrimary }]}>{t('lending.title')}</Text>
         <TouchableOpacity style={[ss.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
           <Feather name="plus" size={20} color="#fff" />
-          <Text style={ss.addBtnText}>Add</Text>
+          <Text style={ss.addBtnText}>{t('common.add')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -135,7 +137,7 @@ export default function LendingScreen() {
         {loading ? (
           <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
         ) : lendings.length === 0 ? (
-          <EmptyState icon="repeat" title="No lending records" subtitle="Track money lent or borrowed" onAction={openAdd} actionLabel="Add Record" />
+          <EmptyState icon="repeat" title={t('lending.empty_title')} subtitle={t('lending.empty_subtitle')} onAction={openAdd} actionLabel={t('lending.add_record')} />
         ) : (
           lendings.map((item) => (
             <LendingItem
