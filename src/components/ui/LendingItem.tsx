@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
-import { formatDate } from '../../utils/date';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { formatDate, DATE_FNS_LOCALES } from '../../utils/date';
 import type { Lending } from '../../types';
 import { LendingType } from '../../enums/lending-type.enum';
 import { LendingStatus } from '../../enums/lending-status.enum';
@@ -16,6 +18,8 @@ interface LendingItemProps {
 
 export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay }: LendingItemProps) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const isLent = item.type === LendingType.LENT;
 
   const statusColors: Record<LendingStatus, { bg: string; text: string }> = {
@@ -34,21 +38,23 @@ export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay
           </View>
           <View>
             <Text style={[styles.name, { color: colors.textPrimary }]}>{item.personName}</Text>
-            <Text style={[styles.typeLabel, { color: colors.textMuted }]}>{isLent ? 'Lent' : 'Borrowed'} • {formatDate(item.date)}</Text>
+            <Text style={[styles.typeLabel, { color: colors.textMuted }]}>{isLent ? t('lending.lent') : t('lending.borrowed')} • {formatDate(item.date, DATE_FNS_LOCALES[language])}</Text>
           </View>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
-          <Text style={[styles.statusText, { color: statusStyle.text }]}>{item.status}</Text>
+          <Text style={[styles.statusText, { color: statusStyle.text }]}>
+            {item.status === LendingStatus.ACTIVE ? t('lending.status_active') : item.status === LendingStatus.SETTLED ? t('lending.status_settled') : t('lending.status_overdue')}
+          </Text>
         </View>
       </View>
 
       <View style={styles.amountRow}>
         <View>
-          <Text style={[styles.amountLabel, { color: colors.textMuted }]}>Amount</Text>
+          <Text style={[styles.amountLabel, { color: colors.textMuted }]}>{t('lending.amount')}</Text>
           <Text style={[styles.amount, { color: colors.textPrimary }]}>{'৳'}{item.amount.toLocaleString()}</Text>
         </View>
         <View style={{ alignItems: 'flex-end' }}>
-          <Text style={[styles.amountLabel, { color: colors.textMuted }]}>Remaining</Text>
+          <Text style={[styles.amountLabel, { color: colors.textMuted }]}>{t('lending.remaining')}</Text>
           <Text style={[styles.amount, { color: item.remainingAmount > 0 ? colors.warning : colors.success }]}>
             {'৳'}{item.remainingAmount.toLocaleString()}
           </Text>
@@ -56,23 +62,23 @@ export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay
       </View>
 
       {item.dueDate && (
-        <Text style={[styles.dueDate, { color: colors.textMuted }]}>Due: {formatDate(item.dueDate)}</Text>
+        <Text style={[styles.dueDate, { color: colors.textMuted }]}>{t('lending.due', { date: formatDate(item.dueDate, DATE_FNS_LOCALES[language]) })}</Text>
       )}
 
       <View style={styles.actions}>
         {item.status !== LendingStatus.SETTLED && (
           <TouchableOpacity style={[styles.btn, { backgroundColor: colors.successBg }]} onPress={onRepay}>
             <Feather name="check-circle" size={13} color={colors.success} />
-            <Text style={[styles.btnText, { color: colors.success }]}>Repay</Text>
+            <Text style={[styles.btnText, { color: colors.success }]}>{t('lending.repay')}</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity style={[styles.btn, { backgroundColor: `${colors.primary}15` }]} onPress={onEdit}>
           <Feather name="edit-2" size={13} color={colors.primary} />
-          <Text style={[styles.btnText, { color: colors.primary }]}>Edit</Text>
+          <Text style={[styles.btnText, { color: colors.primary }]}>{t('common.edit')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.btn, { backgroundColor: colors.dangerBg }]} onPress={onDelete}>
           <Feather name="trash-2" size={13} color={colors.danger} />
-          <Text style={[styles.btnText, { color: colors.danger }]}>Delete</Text>
+          <Text style={[styles.btnText, { color: colors.danger }]}>{t('common.delete')}</Text>
         </TouchableOpacity>
       </View>
     </View>

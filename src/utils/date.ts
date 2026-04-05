@@ -1,4 +1,10 @@
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, type Locale } from 'date-fns';
+import { enUS, bn } from 'date-fns/locale';
+
+export const DATE_FNS_LOCALES: Record<string, Locale> = {
+  en: enUS,
+  bn,
+};
 
 export function getMonthDateRange(year: number, month: number) {
   const date = new Date(year, month - 1, 1);
@@ -10,10 +16,10 @@ export function getMonthDateRange(year: number, month: number) {
   };
 }
 
-export function formatDate(dateStr: string): string {
+export function formatDate(dateStr: string, locale: Locale = enUS): string {
   if (!dateStr) return '';
   try {
-    return format(new Date(dateStr), 'MMM dd, yyyy');
+    return format(new Date(dateStr), 'MMM dd, yyyy', { locale });
   } catch {
     return dateStr;
   }

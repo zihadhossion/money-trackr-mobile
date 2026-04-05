@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useBottomSheet } from '../../src/hooks/useBottomSheet';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
@@ -21,6 +22,7 @@ import type { Expense, Category } from '../../src/types';
 
 export default function ExpensesScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const ss = useMemo(() => screenStyles(colors), [colors]);
   const s = useMemo(() => localStyles(colors), [colors]);
 
@@ -69,22 +71,22 @@ export default function ExpensesScreen() {
       }
       closeSheet();
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to save');
+      Alert.alert(t('common.error'), e.message || t('common.error'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = (item: Expense) => {
-    Alert.alert('Delete Expense', 'Delete this expense?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('expenses.delete_title'), t('expenses.delete_message'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete', style: 'destructive', onPress: async () => {
+        text: t('common.delete'), style: 'destructive', onPress: async () => {
           try {
             await expenseService.delete(item._id);
             setExpenses((prev) => prev.filter((e) => e._id !== item._id));
           } catch (e: any) {
-            Alert.alert('Error', e.message || 'Failed to delete');
+            Alert.alert(t('common.error'), e.message || t('common.error'));
           }
         },
       },
@@ -100,12 +102,12 @@ export default function ExpensesScreen() {
     <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
       <View style={[ss.header, { alignItems: 'flex-start' }]}>
         <View>
-          <Text style={[ss.title, { color: colors.textPrimary }]}>Expenses</Text>
+          <Text style={[ss.title, { color: colors.textPrimary }]}>{t('expenses.title')}</Text>
           <Text style={[s.total, { color: colors.danger }]}>{formatCurrency(total)}</Text>
         </View>
         <TouchableOpacity style={[ss.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
           <Feather name="plus" size={20} color="#fff" />
-          <Text style={ss.addBtnText}>Add</Text>
+          <Text style={ss.addBtnText}>{t('common.add')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -118,14 +120,14 @@ export default function ExpensesScreen() {
         {/* Category filter */}
         <TouchableOpacity style={[s.filterBtn, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]} onPress={() => setShowCatFilter(!showCatFilter)}>
           <Text style={[s.filterText, { color: filterCategory ? colors.textPrimary : colors.textMuted }]}>
-            {filterCategory || 'All Categories'}
+            {filterCategory || t('common.all_categories')}
           </Text>
           <Feather name="chevron-down" size={14} color={colors.textMuted} />
         </TouchableOpacity>
         {showCatFilter && (
           <View style={[s.dropdown, { backgroundColor: colors.bgTertiary, borderColor: colors.borderColor }]}>
             <TouchableOpacity style={s.dropItem} onPress={() => { setFilterCategory(''); setShowCatFilter(false); }}>
-              <Text style={{ color: colors.textPrimary, fontSize: 14 }}>All Categories</Text>
+              <Text style={{ color: colors.textPrimary, fontSize: 14 }}>{t('common.all_categories')}</Text>
             </TouchableOpacity>
             {expenseCats.map((c) => (
               <TouchableOpacity key={c._id} style={s.dropItem} onPress={() => { setFilterCategory(c.name); setShowCatFilter(false); }}>
@@ -138,7 +140,7 @@ export default function ExpensesScreen() {
         {loading ? (
           <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
         ) : expenses.length === 0 ? (
-          <EmptyState icon="trending-down" title="No expenses this month" subtitle="Tap + Add to record an expense" onAction={openAdd} actionLabel="Add Expense" />
+          <EmptyState icon="trending-down" title={t('expenses.empty_title')} subtitle={t('expenses.empty_subtitle')} onAction={openAdd} actionLabel={t('expenses.add')} />
         ) : (
           expenses.map((item) => (
             <TransactionItem

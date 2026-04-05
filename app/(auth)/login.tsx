@@ -2,16 +2,18 @@ import { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
 import { Redirect } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function LoginScreen() {
   const { signIn, isAuthenticated, loading, error } = useAuth();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const s = styles(colors);
 
   useEffect(() => {
-    if (error) Alert.alert('Sign In Error', error);
+    if (error) Alert.alert(t('auth.sign_in_error'), error);
   }, [error]);
 
   if (isAuthenticated) return <Redirect href="/(tabs)" />;
@@ -22,15 +24,15 @@ export default function LoginScreen() {
         <View style={s.logoContainer}>
           <Feather name="trending-up" size={40} color={colors.primary} />
         </View>
-        <Text style={s.appName}>Money Trackr</Text>
-        <Text style={s.tagline}>Your intelligent finance companion</Text>
+        <Text style={s.appName}>{t('auth.app_name')}</Text>
+        <Text style={s.tagline}>{t('auth.tagline')}</Text>
 
         <View style={s.featureList}>
           {[
-            { icon: 'bar-chart-2', text: 'Track income & expenses' },
-            { icon: 'pie-chart', text: 'Visual spending insights' },
-            { icon: 'repeat', text: 'Manage lending & borrowing' },
-            { icon: 'bell', text: 'Budget alerts & analytics' },
+            { icon: 'bar-chart-2', text: t('auth.feature_track') },
+            { icon: 'pie-chart', text: t('auth.feature_visual') },
+            { icon: 'repeat', text: t('auth.feature_lending') },
+            { icon: 'bell', text: t('auth.feature_budget') },
           ].map(({ icon, text }) => (
             <View key={text} style={s.featureRow}>
               <View style={s.featureIcon}>
@@ -43,8 +45,8 @@ export default function LoginScreen() {
       </View>
 
       <View style={s.card}>
-        <Text style={s.welcomeTitle}>Welcome back</Text>
-        <Text style={s.welcomeSubtitle}>Sign in to access your financial dashboard</Text>
+        <Text style={s.welcomeTitle}>{t('auth.welcome_back')}</Text>
+        <Text style={s.welcomeSubtitle}>{t('auth.sign_in_subtitle')}</Text>
 
         <TouchableOpacity
           style={s.googleButton}
@@ -57,14 +59,12 @@ export default function LoginScreen() {
           ) : (
             <>
               <Text style={s.googleIcon}>G</Text>
-              <Text style={s.googleButtonText}>Continue with Google</Text>
+              <Text style={s.googleButtonText}>{t('auth.continue_google')}</Text>
             </>
           )}
         </TouchableOpacity>
 
-        <Text style={s.terms}>
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </Text>
+        <Text style={s.terms}>{t('auth.terms')}</Text>
       </View>
     </View>
   );

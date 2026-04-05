@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { router } from 'expo-router';
 import { getAccessToken, getRefreshToken, setAccessToken, setRefreshToken, clearAuthStorage } from '../utils/storage';
+import { languageStore } from '../locales/languageStore';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api';
 
@@ -10,13 +11,14 @@ const api = axios.create({
   timeout: 15000,
 });
 
-// Attach access token on every request
+// Attach access token and language on every request
 api.interceptors.request.use(async (config) => {
+  config.headers = config.headers ?? {};
   const token = await getAccessToken();
   if (token) {
-    config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config.headers['Accept-Language'] = languageStore.get();
   return config;
 });
 

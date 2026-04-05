@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useBottomSheet } from '../../src/hooks/useBottomSheet';
 import CategoryCard from '../../src/components/ui/CategoryCard';
@@ -19,6 +20,7 @@ type TabType = 'expense' | 'income';
 
 export default function CategoriesScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const ss = useMemo(() => screenStyles(colors), [colors]);
   const s = localStyles;
 
@@ -58,23 +60,23 @@ export default function CategoriesScreen() {
       }
       closeSheet();
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to save');
+      Alert.alert(t('common.error'), e.message || t('common.error'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = (cat: Category) => {
-    if (cat.isDefault) return Alert.alert('Cannot Delete', 'Default categories cannot be deleted.');
-    Alert.alert('Delete Category', `Delete "${cat.name}"?`, [
-      { text: 'Cancel', style: 'cancel' },
+    if (cat.isDefault) return Alert.alert(t('categories.cannot_delete_title'), t('categories.cannot_delete_message'));
+    Alert.alert(t('categories.delete_title'), t('categories.delete_message', { name: cat.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete', style: 'destructive', onPress: async () => {
+        text: t('common.delete'), style: 'destructive', onPress: async () => {
           try {
             await categoryService.delete(cat._id);
             setCategories((prev) => prev.filter((c) => c._id !== cat._id));
           } catch (e: any) {
-            Alert.alert('Error', e.message || 'Failed to delete');
+            Alert.alert(t('common.error'), e.message || t('common.error'));
           }
         },
       },
@@ -84,23 +86,23 @@ export default function CategoriesScreen() {
   return (
     <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
       <View style={[ss.header, { paddingBottom: 12 }]}>
-        <Text style={[ss.title, { color: colors.textPrimary }]}>Categories</Text>
+        <Text style={[ss.title, { color: colors.textPrimary }]}>{t('categories.title')}</Text>
         <TouchableOpacity style={[ss.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
           <Feather name="plus" size={20} color="#fff" />
-          <Text style={ss.addBtnText}>Add</Text>
+          <Text style={ss.addBtnText}>{t('common.add')}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Tabs */}
       <View style={[s.tabs, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-        {(['expense', 'income'] as TabType[]).map((t) => (
+        {(['expense', 'income'] as TabType[]).map((tabType) => (
           <TouchableOpacity
-            key={t}
-            style={[s.tab, tab === t && { backgroundColor: colors.primary }]}
-            onPress={() => setTab(t)}
+            key={tabType}
+            style={[s.tab, tab === tabType && { backgroundColor: colors.primary }]}
+            onPress={() => setTab(tabType)}
           >
-            <Text style={[s.tabText, { color: tab === t ? '#fff' : colors.textMuted }]}>
-              {t === 'expense' ? 'Expenses' : 'Income'}
+            <Text style={[s.tabText, { color: tab === tabType ? '#fff' : colors.textMuted }]}>
+              {tabType === 'expense' ? t('categories.tab_expenses') : t('categories.tab_income')}
             </Text>
           </TouchableOpacity>
         ))}
@@ -113,7 +115,7 @@ export default function CategoriesScreen() {
         {loading ? (
           <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
         ) : filtered.length === 0 ? (
-          <EmptyState icon="grid" title={`No ${tab} categories`} subtitle="Tap + Add to create one" onAction={openAdd} actionLabel="Add Category" />
+          <EmptyState icon="grid" title={tab === 'expense' ? t('categories.empty_expense') : t('categories.empty_income')} subtitle={t('categories.empty_subtitle')} onAction={openAdd} actionLabel={t('categories.add')} />
         ) : (
           <View style={s.grid}>
             {filtered.map((cat) => (

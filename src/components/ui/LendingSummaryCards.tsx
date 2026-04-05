@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { formatCurrency } from '../../utils/currency';
 import type { LendingSummary } from '../../types';
@@ -11,17 +12,18 @@ interface LendingSummaryCardsProps {
 
 export default React.memo(function LendingSummaryCards({ summary }: LendingSummaryCardsProps) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.row}>
       <View style={[styles.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
         <Feather name="arrow-up-right" size={16} color={colors.success} />
-        <Text style={[styles.label, { color: colors.textMuted }]}>Total Lent</Text>
+        <Text style={[styles.label, { color: colors.textMuted }]}>{t('lending.total_lent')}</Text>
         <Text style={[styles.amount, { color: colors.success }]}>{formatCurrency(summary.totalLent)}</Text>
       </View>
       <View style={[styles.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
         <Feather name="arrow-down-left" size={16} color={colors.danger} />
-        <Text style={[styles.label, { color: colors.textMuted }]}>Total Borrowed</Text>
+        <Text style={[styles.label, { color: colors.textMuted }]}>{t('lending.total_borrowed')}</Text>
         <Text style={[styles.amount, { color: colors.danger }]}>{formatCurrency(summary.totalBorrowed)}</Text>
       </View>
     </View>

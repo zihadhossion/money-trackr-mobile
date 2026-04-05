@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useBottomSheet } from '../../src/hooks/useBottomSheet';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
@@ -21,6 +22,7 @@ import type { Income, Category } from '../../src/types';
 
 export default function IncomeScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const ss = useMemo(() => screenStyles(colors), [colors]);
   const s = useMemo(() => localStyles(colors), [colors]);
 
@@ -67,22 +69,22 @@ export default function IncomeScreen() {
       }
       closeSheet();
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to save');
+      Alert.alert(t('common.error'), e.message || t('common.error'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = (item: Income) => {
-    Alert.alert('Delete Income', `Delete this income entry?`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('income.delete_title'), t('income.delete_message'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete', style: 'destructive', onPress: async () => {
+        text: t('common.delete'), style: 'destructive', onPress: async () => {
           try {
             await incomeService.delete(item._id);
             setIncomes((prev) => prev.filter((i) => i._id !== item._id));
           } catch (e: any) {
-            Alert.alert('Error', e.message || 'Failed to delete');
+            Alert.alert(t('common.error'), e.message || t('common.error'));
           }
         },
       },
@@ -97,12 +99,12 @@ export default function IncomeScreen() {
     <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
       <View style={[ss.header, { alignItems: 'flex-start' }]}>
         <View>
-          <Text style={[ss.title, { color: colors.textPrimary }]}>Income</Text>
+          <Text style={[ss.title, { color: colors.textPrimary }]}>{t('income.title')}</Text>
           <Text style={[s.total, { color: colors.success }]}>{formatCurrency(total)}</Text>
         </View>
         <TouchableOpacity style={[ss.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
           <Feather name="plus" size={20} color="#fff" />
-          <Text style={ss.addBtnText}>Add</Text>
+          <Text style={ss.addBtnText}>{t('common.add')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -115,7 +117,7 @@ export default function IncomeScreen() {
         {loading ? (
           <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
         ) : incomes.length === 0 ? (
-          <EmptyState icon="trending-up" title="No income this month" subtitle="Tap + Add to record your income" onAction={openAdd} actionLabel="Add Income" />
+          <EmptyState icon="trending-up" title={t('income.empty_title')} subtitle={t('income.empty_subtitle')} onAction={openAdd} actionLabel={t('income.add')} />
         ) : (
           incomes.map((item) => (
             <TransactionItem
