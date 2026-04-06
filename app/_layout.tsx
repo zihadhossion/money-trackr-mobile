@@ -13,14 +13,22 @@ import SplashAnimation from '../src/components/ui/SplashAnimation';
 
 SplashScreen.preventAutoHideAsync();
 
+const SPLASH_MIN_MS = 2000;
+
 function InnerLayout() {
   const { isDark } = useTheme();
   const { loading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
+  const [minTimePassed, setMinTimePassed] = useState(false);
 
   useEffect(() => {
     SplashScreen.hideAsync();
+    const timer = setTimeout(() => setMinTimePassed(true), SPLASH_MIN_MS);
+    return () => clearTimeout(timer);
   }, []);
+
+  // Keep splash visible until auth finishes AND minimum time has passed
+  const splashVisible = loading || !minTimePassed;
 
   return (
     <>
@@ -32,7 +40,7 @@ function InnerLayout() {
       </Stack>
       {showSplash && (
         <SplashAnimation
-          visible={loading}
+          visible={splashVisible}
           onHidden={() => setShowSplash(false)}
         />
       )}
