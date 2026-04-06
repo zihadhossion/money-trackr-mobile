@@ -1,15 +1,17 @@
 import { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { useLanguage } from '../../src/contexts/LanguageContext';
 
 export default function LoginScreen() {
   const { signIn, isAuthenticated, loading, error } = useAuth();
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const { language, setLanguage, supportedLanguages } = useLanguage();
   const s = styles(colors);
 
   useEffect(() => {
@@ -65,6 +67,25 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         <Text style={s.terms}>{t('auth.terms')}</Text>
+
+        <View style={s.langRow}>
+          {supportedLanguages.map(({ code, label }) => (
+            <TouchableOpacity
+              key={code}
+              style={[s.langBtn, { borderColor: language === code ? colors.primary : colors.borderColor, backgroundColor: language === code ? `${colors.primary}15` : colors.bgTertiary }]}
+              onPress={() => setLanguage(code)}
+            >
+              <Text style={[s.langBtnText, { color: language === code ? colors.primary : colors.textMuted }]}>{label}</Text>
+              {language === code && <Feather name="check" size={13} color={colors.primary} />}
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TouchableOpacity style={s.guideLinkRow} onPress={() => router.push('/guide')}>
+          <Feather name="book-open" size={15} color={colors.primary} />
+          <Text style={[s.guideLinkText, { color: colors.primary }]}>{t('settings.usage_guide')}</Text>
+          <Feather name="chevron-right" size={15} color={colors.primary} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -181,5 +202,35 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       color: colors.textMuted,
       textAlign: 'center',
       lineHeight: 18,
+    },
+    langRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 16,
+    },
+    langBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      borderRadius: 10,
+      borderWidth: 1.5,
+      paddingVertical: 10,
+    },
+    langBtnText: {
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    guideLinkRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      marginTop: 14,
+    },
+    guideLinkText: {
+      fontSize: 13,
+      fontWeight: '600',
     },
   });

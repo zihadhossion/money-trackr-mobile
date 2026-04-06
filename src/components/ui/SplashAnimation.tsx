@@ -1,15 +1,6 @@
-import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 
 interface Props {
   visible: boolean;
@@ -20,125 +11,129 @@ const TEAL = '#4ECDC4';
 const BG = '#0F3D4A';
 
 export default function SplashAnimation({ visible, onHidden }: Props) {
-  const containerOpacity = useSharedValue(1);
+  const containerOpacity = useRef(new Animated.Value(1)).current;
 
-  const iconOpacity = useSharedValue(0);
-  const iconScale = useSharedValue(0.5);
+  const iconOpacity = useRef(new Animated.Value(0)).current;
+  const iconScale = useRef(new Animated.Value(0.5)).current;
 
-  const ringScale = useSharedValue(1);
-  const ringOpacity = useSharedValue(0.35);
+  const ringScale = useRef(new Animated.Value(1)).current;
+  const ringOpacity = useRef(new Animated.Value(0.35)).current;
 
-  const textOpacity = useSharedValue(0);
-  const textTranslateY = useSharedValue(20);
+  const textOpacity = useRef(new Animated.Value(0)).current;
+  const textTranslateY = useRef(new Animated.Value(20)).current;
 
-  const taglineOpacity = useSharedValue(0);
-  const taglineTranslateY = useSharedValue(20);
+  const taglineOpacity = useRef(new Animated.Value(0)).current;
+  const taglineTranslateY = useRef(new Animated.Value(20)).current;
 
-  const spinnerRotation = useSharedValue(0);
+  const spinnerRotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Icon fades + scales in
-    iconOpacity.value = withTiming(1, { duration: 500 });
-    iconScale.value = withSequence(
-      withTiming(1.1, { duration: 400 }),
-      withTiming(1, { duration: 150 }),
-    );
+    Animated.parallel([
+      Animated.timing(iconOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.sequence([
+        Animated.timing(iconScale, { toValue: 1.1, duration: 400, useNativeDriver: true }),
+        Animated.timing(iconScale, { toValue: 1, duration: 150, useNativeDriver: true }),
+      ]),
+    ]).start();
 
     // Pulse ring sonar effect
-    ringScale.value = withDelay(
-      300,
-      withRepeat(
-        withSequence(
-          withTiming(1.8, { duration: 1200 }),
-          withTiming(1, { duration: 0 }),
-        ),
-        -1,
-        false,
-      ),
-    );
-    ringOpacity.value = withDelay(
-      300,
-      withRepeat(
-        withSequence(
-          withTiming(0, { duration: 1200 }),
-          withTiming(0.35, { duration: 0 }),
-        ),
-        -1,
-        false,
-      ),
-    );
+    Animated.loop(
+      Animated.parallel([
+        Animated.sequence([
+          Animated.delay(300),
+          Animated.timing(ringScale, { toValue: 1.8, duration: 1200, useNativeDriver: true }),
+          Animated.timing(ringScale, { toValue: 1, duration: 0, useNativeDriver: true }),
+        ]),
+        Animated.sequence([
+          Animated.delay(300),
+          Animated.timing(ringOpacity, { toValue: 0, duration: 1200, useNativeDriver: true }),
+          Animated.timing(ringOpacity, { toValue: 0.35, duration: 0, useNativeDriver: true }),
+        ]),
+      ]),
+    ).start();
 
     // App name slides up + fades in
-    textOpacity.value = withDelay(300, withTiming(1, { duration: 400 }));
-    textTranslateY.value = withDelay(300, withTiming(0, { duration: 400 }));
+    Animated.parallel([
+      Animated.sequence([
+        Animated.delay(300),
+        Animated.timing(textOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
+      ]),
+      Animated.sequence([
+        Animated.delay(300),
+        Animated.timing(textTranslateY, { toValue: 0, duration: 400, useNativeDriver: true }),
+      ]),
+    ]).start();
 
     // Tagline slides up + fades in
-    taglineOpacity.value = withDelay(500, withTiming(1, { duration: 400 }));
-    taglineTranslateY.value = withDelay(500, withTiming(0, { duration: 400 }));
+    Animated.parallel([
+      Animated.sequence([
+        Animated.delay(500),
+        Animated.timing(taglineOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
+      ]),
+      Animated.sequence([
+        Animated.delay(500),
+        Animated.timing(taglineTranslateY, { toValue: 0, duration: 400, useNativeDriver: true }),
+      ]),
+    ]).start();
 
     // Spinner rotates continuously
-    spinnerRotation.value = withRepeat(withTiming(360, { duration: 900 }), -1, false);
+    Animated.loop(
+      Animated.timing(spinnerRotation, {
+        toValue: 1,
+        duration: 900,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    ).start();
   }, []);
 
   useEffect(() => {
     if (!visible) {
-      containerOpacity.value = withTiming(0, { duration: 400 }, (finished) => {
-        if (finished) runOnJS(onHidden)();
-      });
+      Animated.timing(containerOpacity, { toValue: 0, duration: 400, useNativeDriver: true }).start(
+        ({ finished }) => {
+          if (finished) onHidden();
+        },
+      );
     }
   }, [visible]);
 
-  const containerStyle = useAnimatedStyle(() => ({
-    opacity: containerOpacity.value,
-  }));
-
-  const iconStyle = useAnimatedStyle(() => ({
-    opacity: iconOpacity.value,
-    transform: [{ scale: iconScale.value }],
-  }));
-
-  const ringStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: ringScale.value }],
-    opacity: ringOpacity.value,
-  }));
-
-  const textStyle = useAnimatedStyle(() => ({
-    opacity: textOpacity.value,
-    transform: [{ translateY: textTranslateY.value }],
-  }));
-
-  const taglineStyle = useAnimatedStyle(() => ({
-    opacity: taglineOpacity.value,
-    transform: [{ translateY: taglineTranslateY.value }],
-  }));
-
-  const spinnerStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${spinnerRotation.value}deg` }],
-  }));
+  const spin = spinnerRotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
   return (
-    <Animated.View style={[StyleSheet.absoluteFill, styles.container, containerStyle]}>
+    <Animated.View style={[StyleSheet.absoluteFill, styles.container, { opacity: containerOpacity }]}>
       {/* Icon with pulse ring */}
       <View style={styles.iconContainer}>
-        <Animated.View style={[styles.ring, ringStyle]} />
-        <Animated.View style={[styles.iconCircle, iconStyle]}>
+        <Animated.View
+          style={[styles.ring, { transform: [{ scale: ringScale }], opacity: ringOpacity }]}
+        />
+        <Animated.View
+          style={[styles.iconCircle, { opacity: iconOpacity, transform: [{ scale: iconScale }] }]}
+        >
           <Feather name="dollar-sign" size={44} color={TEAL} />
         </Animated.View>
       </View>
 
       {/* App name */}
-      <Animated.Text style={[styles.appName, textStyle]}>
+      <Animated.Text
+        style={[styles.appName, { opacity: textOpacity, transform: [{ translateY: textTranslateY }] }]}
+      >
         Money Trackr
       </Animated.Text>
 
       {/* Tagline */}
-      <Animated.Text style={[styles.tagline, taglineStyle]}>
+      <Animated.Text
+        style={[
+          styles.tagline,
+          { opacity: taglineOpacity, transform: [{ translateY: taglineTranslateY }] },
+        ]}
+      >
         Track every penny
       </Animated.Text>
 
       {/* Spinner */}
       <View style={styles.spinnerWrapper}>
-        <Animated.View style={[styles.spinner, spinnerStyle]} />
+        <Animated.View style={[styles.spinner, { transform: [{ rotate: spin }] }]} />
       </View>
     </Animated.View>
   );

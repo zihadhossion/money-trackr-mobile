@@ -28,8 +28,3 @@ export function formatDate(dateStr: string, locale: Locale = enUS): string {
 export function toISODate(date: Date): string {
   return format(date, 'yyyy-MM-dd');
 }
-
-export const MONTHS_SHORT = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];

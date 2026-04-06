@@ -8,6 +8,7 @@
     "userInterfaceStyle": "automatic",
     "scheme": "moneytrackr",
     "splash": {
+      "image": "./assets/splash-bg.png",
       "backgroundColor": "#0F3D4A"
     },
     "android": {
