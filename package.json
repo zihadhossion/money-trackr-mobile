@@ -18,6 +18,7 @@
     "babel-preset-expo": "~55.0.8",
     "date-fns": "^4.1.0",
     "expo": "~55.0.7",
+    "expo-linear-gradient": "~55.0.11",
     "expo-localization": "~55.0.9",
     "expo-router": "~55.0.6",
     "expo-secure-store": "~55.0.9",
@@ -31,11 +32,15 @@
     "react-native-gifted-charts": "^1.4.76",
     "react-native-reanimated": "4.2.1",
     "react-native-safe-area-context": "~5.6.2",
-    "react-native-screens": "~4.23.0"
+    "react-native-screens": "~4.23.0",
+    "react-native-svg": "15.15.3"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "react-native-worklets": "~0.7.0"
+  }
 }
