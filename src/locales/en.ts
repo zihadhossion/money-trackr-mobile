@@ -40,6 +40,8 @@ const en = {
     category_name_placeholder: 'Category name',
     repayment_amount: 'Repayment Amount *',
     version: 'Money Trackr v1.0.0',
+    load_more: 'Load more',
+    loading_more: 'Loading more...',
   },
 
   validation: {

@@ -1,13 +1,20 @@
 import api from './api';
 import type { Lending, LendingSummary } from '../types';
 
+export interface PaginatedLendings {
+  lendings: Lending[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 export const lendingService = {
-  async getAll(startDate?: string, endDate?: string): Promise<Lending[]> {
-    const params: Record<string, string> = {};
+  async getAll(startDate?: string, endDate?: string, page = 1, limit = 15): Promise<PaginatedLendings> {
+    const params: Record<string, string> = { page: String(page), limit: String(limit) };
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
     const { data } = await api.get('/lending', { params });
-    return Array.isArray(data) ? data : data.lendings ?? [];
+    return data;
   },
 
   async getSummary(): Promise<LendingSummary> {

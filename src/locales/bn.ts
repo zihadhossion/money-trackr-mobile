@@ -40,6 +40,8 @@ const bn = {
     category_name_placeholder: 'বিভাগের নাম',
     repayment_amount: 'পরিশোধের পরিমাণ *',
     version: 'মানি ট্র্যাকার v1.0.0',
+    load_more: 'আরো লোড করুন',
+    loading_more: 'আরো লোড হচ্ছে...',
   },
 
   validation: {
