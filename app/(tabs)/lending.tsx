@@ -9,9 +9,11 @@ import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useBottomSheet } from '../../src/hooks/useBottomSheet';
+import { usePagination } from '../../src/hooks/usePagination';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
 import LendingItem from '../../src/components/ui/LendingItem';
 import LendingSummaryCards from '../../src/components/ui/LendingSummaryCards';
+import PaginationFooter from '../../src/components/ui/PaginationFooter';
 import EmptyState from '../../src/components/ui/EmptyState';
 import LendingForm from '../../src/components/forms/LendingForm';
 import RepaymentForm from '../../src/components/forms/RepaymentForm';
@@ -29,13 +31,34 @@ export default function LendingScreen() {
 
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
   const [year, setYear] = useState(() => new Date().getFullYear());
-  const [lendings, setLendings] = useState<Lending[]>([]);
   const [summary, setSummary] = useState<LendingSummary>({ totalLent: 0, totalBorrowed: 0 });
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [repaying, setRepaying] = useState<Lending | null>(null);
   const [sheetMode, setSheetMode] = useState<SheetMode>(null);
+
+  const { data: lendings, loading, loadingMore, refreshing, hasMore, refresh, loadMore, onScroll } = usePagination<Lending>({
+    fetcher: useCallback(async (page, pageSize) => {
+      const { startDate, endDate } = getMonthDateRange(year, month);
+      const { lendings, totalPages } = await lendingService.getAll(startDate, endDate, page, pageSize);
+      return { data: lendings, totalPages };
+    }, [year, month]),
+    deps: [year, month],
+  });
+
+  const refreshSummary = useCallback(() => {
+    lendingService.getSummary()
+      .then(setSummary)
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    refreshSummary();
+  }, [refreshSummary, year, month]);
+
+  const handleRefresh = useCallback(() => {
+    refresh();
+    refreshSummary();
+  }, [refresh, refreshSummary]);
 
   const { sheetRef, snapPoints, editing, openAdd: baseOpenAdd, openEdit: baseOpenEdit, closeSheet: baseCloseSheet } = useBottomSheet<Lending>();
 
@@ -44,38 +67,16 @@ export default function LendingScreen() {
   const openRepay = (item: Lending) => { setRepaying(item); setSheetMode('repayment'); sheetRef.current?.expand(); };
   const closeSheet = () => { baseCloseSheet(); setRepaying(null); setSheetMode(null); };
 
-  const fetchData = useCallback(async () => {
-    const { startDate, endDate } = getMonthDateRange(year, month);
-    try {
-      const [data, sum] = await Promise.all([
-        lendingService.getAll(startDate, endDate),
-        lendingService.getSummary(),
-      ]);
-      setLendings(data);
-      setSummary(sum);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [year, month]);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
-
   const handleSubmit = async (data: Omit<Lending, '_id'>) => {
     setSaving(true);
     try {
       if (editing) {
-        const updated = await lendingService.update(editing._id, data);
-        setLendings((prev) => prev.map((l) => (l._id === editing._id ? updated : l)));
+        await lendingService.update(editing._id, data);
       } else {
-        const created = await lendingService.create(data);
-        setLendings((prev) => [created, ...prev]);
+        await lendingService.create(data);
       }
       closeSheet();
-      // Refresh summary
-      lendingService.getSummary().then(setSummary);
+      handleRefresh();
     } catch (e: any) {
       Alert.alert(t('common.error'), e.message || t('common.error'));
     } finally {
@@ -87,10 +88,9 @@ export default function LendingScreen() {
     if (!repaying) return;
     setSaving(true);
     try {
-      const updated = await lendingService.addRepayment(repaying._id, amount);
-      setLendings((prev) => prev.map((l) => (l._id === repaying._id ? updated : l)));
+      await lendingService.addRepayment(repaying._id, amount);
       closeSheet();
-      lendingService.getSummary().then(setSummary);
+      handleRefresh();
     } catch (e: any) {
       Alert.alert(t('common.error'), e.message || t('common.error'));
     } finally {
@@ -105,8 +105,7 @@ export default function LendingScreen() {
         text: t('common.delete'), style: 'destructive', onPress: async () => {
           try {
             await lendingService.delete(item._id);
-            setLendings((prev) => prev.filter((l) => l._id !== item._id));
-            lendingService.getSummary().then(setSummary);
+            handleRefresh();
           } catch (e: any) {
             Alert.alert(t('common.error'), e.message || t('common.error'));
           }
@@ -127,7 +126,9 @@ export default function LendingScreen() {
 
       <ScrollView
         contentContainerStyle={ss.scroll}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); }} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}
+        onScroll={onScroll}
+        scrollEventThrottle={400}
       >
         <MonthYearPicker month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
 
@@ -139,15 +140,24 @@ export default function LendingScreen() {
         ) : lendings.length === 0 ? (
           <EmptyState icon="repeat" title={t('lending.empty_title')} subtitle={t('lending.empty_subtitle')} onAction={openAdd} actionLabel={t('lending.add_record')} />
         ) : (
-          lendings.map((item) => (
-            <LendingItem
-              key={item._id}
-              item={item}
-              onEdit={() => openEdit(item)}
-              onDelete={() => handleDelete(item)}
-              onRepay={() => openRepay(item)}
+          <>
+            {lendings.map((item) => (
+              <LendingItem
+                key={item._id}
+                item={item}
+                onEdit={() => openEdit(item)}
+                onDelete={() => handleDelete(item)}
+                onRepay={() => openRepay(item)}
+              />
+            ))}
+            <PaginationFooter
+              loadingMore={loadingMore}
+              hasMore={hasMore}
+              onLoadMore={loadMore}
+              color={colors.primary}
+              loadMoreText={t('common.load_more')}
             />
-          ))
+          </>
         )}
       </ScrollView>
 

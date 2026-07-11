@@ -9,8 +9,10 @@ import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useBottomSheet } from '../../src/hooks/useBottomSheet';
+import { usePagination } from '../../src/hooks/usePagination';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
 import TransactionItem from '../../src/components/ui/TransactionItem';
+import PaginationFooter from '../../src/components/ui/PaginationFooter';
 import EmptyState from '../../src/components/ui/EmptyState';
 import IncomeForm from '../../src/components/forms/IncomeForm';
 import { incomeService } from '../../src/services/incomeService';
@@ -28,46 +30,38 @@ export default function IncomeScreen() {
 
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
   const [year, setYear] = useState(() => new Date().getFullYear());
-  const [incomes, setIncomes] = useState<Income[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+
+  const { data: incomes, meta, loading, loadingMore, refreshing, hasMore, refresh, loadMore, onScroll } = usePagination<Income, { periodTotal: number }>({
+    fetcher: useCallback(async (page, pageSize) => {
+      const { startDate, endDate } = getMonthDateRange(year, month);
+      const { incomes, totalPages, periodTotal } = await incomeService.getAll(startDate, endDate, page, pageSize);
+      return { data: incomes, totalPages, meta: { periodTotal } };
+    }, [year, month]),
+    deps: [year, month],
+  });
+
+  useEffect(() => {
+    categoryService.getAll('income')
+      .then(setCategories)
+      .catch(console.error);
+  }, []);
 
   const { sheetRef, snapPoints, editing, openAdd, openEdit, closeSheet } = useBottomSheet<Income>();
 
-  const total = incomes.reduce((sum, i) => sum + i.amount, 0);
-
-  const fetchData = useCallback(async () => {
-    const { startDate, endDate } = getMonthDateRange(year, month);
-    try {
-      const [data, cats] = await Promise.all([
-        incomeService.getAll(startDate, endDate),
-        categoryService.getAll('income'),
-      ]);
-      setIncomes(data);
-      setCategories(cats);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [year, month]);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const periodTotal = meta?.periodTotal ?? 0;
 
   const handleSubmit = async (data: Omit<Income, '_id'>) => {
     setSaving(true);
     try {
       if (editing) {
-        const updated = await incomeService.update(editing._id, data);
-        setIncomes((prev) => prev.map((i) => (i._id === editing._id ? updated : i)));
+        await incomeService.update(editing._id, data);
       } else {
-        const created = await incomeService.create(data);
-        setIncomes((prev) => [created, ...prev]);
+        await incomeService.create(data);
       }
       closeSheet();
+      refresh();
     } catch (e: any) {
       Alert.alert(t('common.error'), e.message || t('common.error'));
     } finally {
@@ -82,7 +76,7 @@ export default function IncomeScreen() {
         text: t('common.delete'), style: 'destructive', onPress: async () => {
           try {
             await incomeService.delete(item._id);
-            setIncomes((prev) => prev.filter((i) => i._id !== item._id));
+            refresh();
           } catch (e: any) {
             Alert.alert(t('common.error'), e.message || t('common.error'));
           }
@@ -100,7 +94,7 @@ export default function IncomeScreen() {
       <View style={[ss.header, { alignItems: 'flex-start' }]}>
         <View>
           <Text style={[ss.title, { color: colors.textPrimary }]}>{t('income.title')}</Text>
-          <Text style={[s.total, { color: colors.success }]}>{formatCurrency(total)}</Text>
+          <Text style={[s.total, { color: colors.success }]}>{formatCurrency(periodTotal)}</Text>
         </View>
         <TouchableOpacity style={[ss.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
           <Feather name="plus" size={20} color="#fff" />
@@ -110,7 +104,9 @@ export default function IncomeScreen() {
 
       <ScrollView
         contentContainerStyle={ss.scroll}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); }} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.primary} />}
+        onScroll={onScroll}
+        scrollEventThrottle={400}
       >
         <MonthYearPicker month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
 
@@ -119,19 +115,28 @@ export default function IncomeScreen() {
         ) : incomes.length === 0 ? (
           <EmptyState icon="trending-up" title={t('income.empty_title')} subtitle={t('income.empty_subtitle')} onAction={openAdd} actionLabel={t('income.add')} />
         ) : (
-          incomes.map((item) => (
-            <TransactionItem
-              key={item._id}
-              icon={getCategoryIcon(item.category)}
-              category={item.category}
-              amount={item.amount}
-              date={item.date}
-              note={item.source || item.notes}
-              isIncome
-              onEdit={() => openEdit(item)}
-              onDelete={() => handleDelete(item)}
+          <>
+            {incomes.map((item) => (
+              <TransactionItem
+                key={item._id}
+                icon={getCategoryIcon(item.category)}
+                category={item.category}
+                amount={item.amount}
+                date={item.date}
+                note={item.source || item.notes}
+                isIncome
+                onEdit={() => openEdit(item)}
+                onDelete={() => handleDelete(item)}
+              />
+            ))}
+            <PaginationFooter
+              loadingMore={loadingMore}
+              hasMore={hasMore}
+              onLoadMore={loadMore}
+              color={colors.primary}
+              loadMoreText={t('common.load_more')}
             />
-          ))
+          </>
         )}
       </ScrollView>
 

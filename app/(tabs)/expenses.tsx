@@ -9,8 +9,10 @@ import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useBottomSheet } from '../../src/hooks/useBottomSheet';
+import { usePagination } from '../../src/hooks/usePagination';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
 import TransactionItem from '../../src/components/ui/TransactionItem';
+import PaginationFooter from '../../src/components/ui/PaginationFooter';
 import EmptyState from '../../src/components/ui/EmptyState';
 import ExpenseForm from '../../src/components/forms/ExpenseForm';
 import { expenseService } from '../../src/services/expenseService';
@@ -28,48 +30,40 @@ export default function ExpensesScreen() {
 
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
   const [year, setYear] = useState(() => new Date().getFullYear());
-  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [filterCategory, setFilterCategory] = useState<string>('');
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [showCatFilter, setShowCatFilter] = useState(false);
+
+  const { data: expenses, meta, loading, loadingMore, refreshing, hasMore, refresh, loadMore, onScroll } = usePagination<Expense, { periodTotal: number }>({
+    fetcher: useCallback(async (page, pageSize) => {
+      const { startDate, endDate } = getMonthDateRange(year, month);
+      const { expenses, totalPages, periodTotal } = await expenseService.getAll(startDate, endDate, filterCategory || undefined, page, pageSize);
+      return { data: expenses, totalPages, meta: { periodTotal } };
+    }, [year, month, filterCategory]),
+    deps: [year, month, filterCategory],
+  });
+
+  useEffect(() => {
+    categoryService.getAll('expense')
+      .then(setCategories)
+      .catch(console.error);
+  }, []);
 
   const { sheetRef, snapPoints, editing, openAdd, openEdit, closeSheet } = useBottomSheet<Expense>();
 
-  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
-
-  const fetchData = useCallback(async () => {
-    const { startDate, endDate } = getMonthDateRange(year, month);
-    try {
-      const [data, cats] = await Promise.all([
-        expenseService.getAll(startDate, endDate, filterCategory || undefined),
-        categoryService.getAll('expense'),
-      ]);
-      setExpenses(data);
-      setCategories(cats);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [year, month, filterCategory]);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const periodTotal = meta?.periodTotal ?? 0;
 
   const handleSubmit = async (data: Omit<Expense, '_id'>) => {
     setSaving(true);
     try {
       if (editing) {
-        const updated = await expenseService.update(editing._id, data);
-        setExpenses((prev) => prev.map((e) => (e._id === editing._id ? updated : e)));
+        await expenseService.update(editing._id, data);
       } else {
-        const created = await expenseService.create(data);
-        setExpenses((prev) => [created, ...prev]);
+        await expenseService.create(data);
       }
       closeSheet();
+      refresh();
     } catch (e: any) {
       Alert.alert(t('common.error'), e.message || t('common.error'));
     } finally {
@@ -84,7 +78,7 @@ export default function ExpensesScreen() {
         text: t('common.delete'), style: 'destructive', onPress: async () => {
           try {
             await expenseService.delete(item._id);
-            setExpenses((prev) => prev.filter((e) => e._id !== item._id));
+            refresh();
           } catch (e: any) {
             Alert.alert(t('common.error'), e.message || t('common.error'));
           }
@@ -103,7 +97,7 @@ export default function ExpensesScreen() {
       <View style={[ss.header, { alignItems: 'flex-start' }]}>
         <View>
           <Text style={[ss.title, { color: colors.textPrimary }]}>{t('expenses.title')}</Text>
-          <Text style={[s.total, { color: colors.danger }]}>{formatCurrency(total)}</Text>
+          <Text style={[s.total, { color: colors.danger }]}>{formatCurrency(periodTotal)}</Text>
         </View>
         <TouchableOpacity style={[ss.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
           <Feather name="plus" size={20} color="#fff" />
@@ -113,7 +107,9 @@ export default function ExpensesScreen() {
 
       <ScrollView
         contentContainerStyle={ss.scroll}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); }} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.primary} />}
+        onScroll={onScroll}
+        scrollEventThrottle={400}
       >
         <MonthYearPicker month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
 
@@ -142,19 +138,28 @@ export default function ExpensesScreen() {
         ) : expenses.length === 0 ? (
           <EmptyState icon="trending-down" title={t('expenses.empty_title')} subtitle={t('expenses.empty_subtitle')} onAction={openAdd} actionLabel={t('expenses.add')} />
         ) : (
-          expenses.map((item) => (
-            <TransactionItem
-              key={item._id}
-              icon={getCategoryIcon(item.category)}
-              category={item.category}
-              amount={item.amount}
-              date={item.date}
-              note={item.notes}
-              isIncome={false}
-              onEdit={() => openEdit(item)}
-              onDelete={() => handleDelete(item)}
+          <>
+            {expenses.map((item) => (
+              <TransactionItem
+                key={item._id}
+                icon={getCategoryIcon(item.category)}
+                category={item.category}
+                amount={item.amount}
+                date={item.date}
+                note={item.notes}
+                isIncome={false}
+                onEdit={() => openEdit(item)}
+                onDelete={() => handleDelete(item)}
+              />
+            ))}
+            <PaginationFooter
+              loadingMore={loadingMore}
+              hasMore={hasMore}
+              onLoadMore={loadMore}
+              color={colors.primary}
+              loadMoreText={t('common.load_more')}
             />
-          ))
+          </>
         )}
       </ScrollView>
 
