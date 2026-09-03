@@ -6,7 +6,7 @@ A cross-platform personal finance management app built with Expo (React Native) 
 
 - **Dashboard** — Overview of income, expenses, balance, and budget usage with charts
 - **Income Tracking** — Log and categorize income transactions by month
-- **Expense Tracking** — Track spending with category breakdown and recurring expense support
+- **Expense Tracking** — Track spending with category breakdown
 - **Lending Management** — Track money lent to others or borrowed, with repayment records and due dates
 - **Categories** — Create and manage custom income/expense categories with icons and colors
 - **Budget Alerts** — Warning at 80% and danger at 100% of monthly budget

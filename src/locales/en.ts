@@ -35,7 +35,6 @@ const en = {
     due_date: 'Due Date (optional)',
     no_due_date: 'No due date',
     status: 'Status',
-    recurring_expense: 'Recurring expense',
     name_label: 'Name *',
     category_name_placeholder: 'Category name',
     repayment_amount: 'Repayment Amount *',
@@ -119,9 +118,9 @@ const en = {
     record_repayment: 'Record Repayment',
     from: 'From: {{name}}',
     remaining_balance: 'Remaining: {{currency}}{{amount}}',
-    status_active: 'ACTIVE',
-    status_settled: 'SETTLED',
-    status_overdue: 'OVERDUE',
+    status_pending: 'PENDING',
+    status_partial: 'PARTIAL',
+    status_paid: 'PAID',
   },
 
   categories: {

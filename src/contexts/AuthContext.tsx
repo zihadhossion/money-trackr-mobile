@@ -116,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       await api.post('/auth/logout').catch(() => {});
+      await GoogleSignin.revokeAccess();
       await GoogleSignin.signOut();
     } finally {
       await clearAuthStorage();

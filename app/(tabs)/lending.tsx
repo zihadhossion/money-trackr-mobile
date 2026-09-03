@@ -13,7 +13,6 @@ import { usePagination } from '../../src/hooks/usePagination';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
 import LendingItem from '../../src/components/ui/LendingItem';
 import LendingSummaryCards from '../../src/components/ui/LendingSummaryCards';
-import PaginationFooter from '../../src/components/ui/PaginationFooter';
 import EmptyState from '../../src/components/ui/EmptyState';
 import LendingForm from '../../src/components/forms/LendingForm';
 import RepaymentForm from '../../src/components/forms/RepaymentForm';
@@ -23,6 +22,21 @@ import { screenStyles } from '../../src/theme/screenStyles';
 import type { Lending, LendingSummary } from '../../src/types';
 
 type SheetMode = 'form' | 'repayment' | null;
+type FilterType = '' | 'LENT' | 'BORROWED';
+type FilterStatus = '' | 'PENDING' | 'PARTIAL' | 'PAID';
+
+const TYPE_FILTERS: { label: string; value: FilterType }[] = [
+  { label: 'All', value: '' },
+  { label: 'Lent', value: 'LENT' },
+  { label: 'Borrowed', value: 'BORROWED' },
+];
+
+const STATUS_FILTERS: { label: string; value: FilterStatus }[] = [
+  { label: 'All', value: '' },
+  { label: 'Pending', value: 'PENDING' },
+  { label: 'Partial', value: 'PARTIAL' },
+  { label: 'Paid', value: 'PAID' },
+];
 
 export default function LendingScreen() {
   const { colors } = useTheme();
@@ -35,14 +49,20 @@ export default function LendingScreen() {
   const [saving, setSaving] = useState(false);
   const [repaying, setRepaying] = useState<Lending | null>(null);
   const [sheetMode, setSheetMode] = useState<SheetMode>(null);
+  const [filterType, setFilterType] = useState<FilterType>('');
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>('');
 
-  const { data: lendings, loading, loadingMore, refreshing, hasMore, refresh, loadMore, onScroll } = usePagination<Lending>({
+  const { data: lendings, loading, refreshing, refresh, onScroll } = usePagination<Lending>({
     fetcher: useCallback(async (page, pageSize) => {
       const { startDate, endDate } = getMonthDateRange(year, month);
-      const { lendings, totalPages } = await lendingService.getAll(startDate, endDate, page, pageSize);
+      const { lendings, totalPages } = await lendingService.getAll(
+        startDate, endDate, page, pageSize,
+        filterType || undefined,
+        filterStatus || undefined,
+      );
       return { data: lendings, totalPages };
-    }, [year, month]),
-    deps: [year, month],
+    }, [year, month, filterType, filterStatus]),
+    deps: [year, month, filterType, filterStatus],
   });
 
   const refreshSummary = useCallback(() => {
@@ -132,6 +152,36 @@ export default function LendingScreen() {
       >
         <MonthYearPicker month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
 
+        {/* Type Filter Chips */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+          {TYPE_FILTERS.map((f) => (
+            <TouchableOpacity
+              key={f.value}
+              style={[styles.chip, filterType === f.value && styles.chipActive]}
+              onPress={() => setFilterType(f.value)}
+            >
+              <Text style={[styles.chipText, filterType === f.value && styles.chipTextActive]}>
+                {f.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Status Filter Chips */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+          {STATUS_FILTERS.map((f) => (
+            <TouchableOpacity
+              key={f.value}
+              style={[styles.chip, filterStatus === f.value && styles.chipActive]}
+              onPress={() => setFilterStatus(f.value)}
+            >
+              <Text style={[styles.chipText, filterStatus === f.value && styles.chipTextActive]}>
+                {f.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
         {/* Summary cards */}
         <LendingSummaryCards summary={summary} />
 
@@ -150,13 +200,7 @@ export default function LendingScreen() {
                 onRepay={() => openRepay(item)}
               />
             ))}
-            <PaginationFooter
-              loadingMore={loadingMore}
-              hasMore={hasMore}
-              onLoadMore={loadMore}
-              color={colors.primary}
-              loadMoreText={t('common.load_more')}
-            />
+
           </>
         )}
       </ScrollView>
@@ -185,3 +229,24 @@ export default function LendingScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  filterRow: { paddingHorizontal: 16, paddingBottom: 8, gap: 8 },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: 'rgba(128,128,128,0.12)',
+  },
+  chipActive: {
+    backgroundColor: '#6366f1',
+  },
+  chipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#888',
+  },
+  chipTextActive: {
+    color: '#fff',
+  },
+});

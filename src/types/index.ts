@@ -23,7 +23,6 @@ export interface Expense {
   category: string;
   date: string;
   notes: string;
-  isRecurring: boolean;
 }
 
 export interface Category {

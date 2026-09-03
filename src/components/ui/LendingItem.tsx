@@ -23,11 +23,11 @@ export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay
   const isLent = item.type === LendingType.LENT;
 
   const statusColors: Record<LendingStatus, { bg: string; text: string }> = {
-    [LendingStatus.ACTIVE]:   { bg: colors.successBg, text: colors.successText },
-    [LendingStatus.SETTLED]:  { bg: colors.primaryBg, text: colors.primaryText },
-    [LendingStatus.OVERDUE]:  { bg: colors.dangerBg, text: colors.dangerText },
+    [LendingStatus.PENDING]:  { bg: colors.dangerBg, text: colors.dangerText },
+    [LendingStatus.PAID]:     { bg: colors.successBg, text: colors.successText },
+    [LendingStatus.PARTIAL]:  { bg: colors.primaryBg, text: colors.primaryText },
   };
-  const statusStyle = statusColors[item.status] ?? statusColors[LendingStatus.ACTIVE];
+  const statusStyle = statusColors[item.status] ?? statusColors[LendingStatus.PENDING];
 
   return (
     <View style={[styles.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
@@ -43,7 +43,7 @@ export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay
         </View>
         <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
           <Text style={[styles.statusText, { color: statusStyle.text }]}>
-            {item.status === LendingStatus.ACTIVE ? t('lending.status_active') : item.status === LendingStatus.SETTLED ? t('lending.status_settled') : t('lending.status_overdue')}
+            {item.status === LendingStatus.PAID ? t('lending.status_paid') : item.status === LendingStatus.PARTIAL ? t('lending.status_partial') : t('lending.status_pending')}
           </Text>
         </View>
       </View>
@@ -66,7 +66,7 @@ export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay
       )}
 
       <View style={styles.actions}>
-        {item.status !== LendingStatus.SETTLED && (
+        {item.status !== LendingStatus.PAID && (
           <TouchableOpacity style={[styles.btn, { backgroundColor: colors.successBg }]} onPress={onRepay}>
             <Feather name="check-circle" size={13} color={colors.success} />
             <Text style={[styles.btnText, { color: colors.success }]}>{t('lending.repay')}</Text>
