@@ -35,7 +35,6 @@ const en = {
     due_date: 'Due Date (optional)',
     no_due_date: 'No due date',
     status: 'Status',
-    recurring_expense: 'Recurring expense',
     name_label: 'Name *',
     category_name_placeholder: 'Category name',
     repayment_amount: 'Repayment Amount *',

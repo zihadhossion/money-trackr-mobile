@@ -35,7 +35,6 @@ const bn = {
     due_date: 'শেষ তারিখ (ঐচ্ছিক)',
     no_due_date: 'কোনো শেষ তারিখ নেই',
     status: 'অবস্থা',
-    recurring_expense: 'পুনরাবৃত্তি খরচ',
     name_label: 'নাম *',
     category_name_placeholder: 'বিভাগের নাম',
     repayment_amount: 'পরিশোধের পরিমাণ *',

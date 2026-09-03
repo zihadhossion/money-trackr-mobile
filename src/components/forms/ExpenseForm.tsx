@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Switch, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +25,6 @@ export default function ExpenseForm({ initial, categories, onSubmit, onCancel, l
   const [amount, setAmount] = useState(initial?.amount?.toString() ?? '');
   const [category, setCategory] = useState(initial?.category ?? '');
   const [notes, setNotes] = useState(initial?.notes ?? '');
-  const [isRecurring, setIsRecurring] = useState(initial?.isRecurring ?? false);
   const [date, setDate] = useState<Date>(initial?.date ? new Date(initial.date) : new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
@@ -36,7 +35,7 @@ export default function ExpenseForm({ initial, categories, onSubmit, onCancel, l
   async function handleSubmit() {
     if (!amount || isNaN(Number(amount))) return Alert.alert(t('common.validation'), t('validation.valid_amount'));
     if (!category) return Alert.alert(t('common.validation'), t('validation.select_category'));
-    await onSubmit({ amount: Number(amount), category, notes, isRecurring, date: toISODate(date) });
+    await onSubmit({ amount: Number(amount), category, notes, date: toISODate(date) });
   }
 
   return (
@@ -78,11 +77,6 @@ export default function ExpenseForm({ initial, categories, onSubmit, onCancel, l
       <Text style={fs.label}>{t('common.notes')}</Text>
       <TextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} />
 
-      <View style={s.switchRow}>
-        <Text style={[fs.label, { marginTop: 0, marginBottom: 0 }]}>{t('common.recurring_expense')}</Text>
-        <Switch value={isRecurring} onValueChange={setIsRecurring} trackColor={{ true: colors.primary }} />
-      </View>
-
       <View style={fs.buttons}>
         <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
         <TouchableOpacity style={[fs.submitBtn, { backgroundColor: colors.primary }]} onPress={handleSubmit} disabled={loading}>
@@ -93,6 +87,4 @@ export default function ExpenseForm({ initial, categories, onSubmit, onCancel, l
   );
 }
 
-const localStyles = (colors: any) => StyleSheet.create({
-  switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14 },
-});
+const localStyles = (colors: any) => StyleSheet.create({});
