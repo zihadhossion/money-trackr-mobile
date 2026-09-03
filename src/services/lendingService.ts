@@ -9,10 +9,12 @@ export interface PaginatedLendings {
 }
 
 export const lendingService = {
-  async getAll(startDate?: string, endDate?: string, page = 1, limit = 15): Promise<PaginatedLendings> {
+  async getAll(startDate?: string, endDate?: string, page = 1, limit = 15, type?: string, status?: string): Promise<PaginatedLendings> {
     const params: Record<string, string> = { page: String(page), limit: String(limit) };
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
+    if (type) params.type = type;
+    if (status) params.status = status;
     const { data } = await api.get('/lending', { params });
     return data;
   },

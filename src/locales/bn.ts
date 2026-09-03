@@ -118,9 +118,9 @@ const bn = {
     record_repayment: 'পরিশোধ রেকর্ড করুন',
     from: 'থেকে: {{name}}',
     remaining_balance: 'অবশিষ্ট: {{currency}}{{amount}}',
-    status_active: 'সক্রিয়',
-    status_settled: 'পরিশোধিত',
-    status_overdue: 'মেয়াদোত্তীর্ণ',
+    status_pending: 'বকেয়',
+    status_partial: 'আংশিক',
+    status_paid: 'পরিশোধিত',
   },
 
   categories: {

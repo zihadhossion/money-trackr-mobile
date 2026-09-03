@@ -1,5 +1,5 @@
 export enum LendingStatus {
-  ACTIVE = 'ACTIVE',
-  SETTLED = 'SETTLED',
-  OVERDUE = 'OVERDUE',
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  PARTIAL = 'PARTIAL',
 }

@@ -118,9 +118,9 @@ const en = {
     record_repayment: 'Record Repayment',
     from: 'From: {{name}}',
     remaining_balance: 'Remaining: {{currency}}{{amount}}',
-    status_active: 'ACTIVE',
-    status_settled: 'SETTLED',
-    status_overdue: 'OVERDUE',
+    status_pending: 'PENDING',
+    status_partial: 'PARTIAL',
+    status_paid: 'PAID',
   },
 
   categories: {

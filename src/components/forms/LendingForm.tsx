@@ -27,7 +27,7 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
   const [amount, setAmount] = useState(initial?.amount?.toString() ?? '');
   const [personName, setPersonName] = useState(initial?.personName ?? '');
   const [type, setType] = useState<LendingType>(initial?.type ?? LendingType.LENT);
-  const [status, setStatus] = useState<LendingStatus>(initial?.status ?? LendingStatus.ACTIVE);
+  const [status, setStatus] = useState<LendingStatus>(initial?.status ?? LendingStatus.PENDING);
   const [notes, setNotes] = useState(initial?.notes ?? '');
   const [date, setDate] = useState<Date>(initial?.date ? new Date(initial.date) : new Date());
   const [dueDate, setDueDate] = useState<Date | null>(initial?.dueDate ? new Date(initial.dueDate) : null);
@@ -93,11 +93,11 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
         <>
           <Text style={fs.label}>{t('common.status')}</Text>
           <View style={s.statusRow}>
-            {([LendingStatus.ACTIVE, LendingStatus.SETTLED, LendingStatus.OVERDUE] as LendingStatus[]).map((st) => {
+            {([LendingStatus.PENDING, LendingStatus.PARTIAL, LendingStatus.PAID] as LendingStatus[]).map((st) => {
               const statusLabels: Record<LendingStatus, string> = {
-                [LendingStatus.ACTIVE]: t('lending.status_active'),
-                [LendingStatus.SETTLED]: t('lending.status_settled'),
-                [LendingStatus.OVERDUE]: t('lending.status_overdue'),
+                [LendingStatus.PENDING]: t('lending.status_pending'),
+                [LendingStatus.PARTIAL]: t('lending.status_partial'),
+                [LendingStatus.PAID]: t('lending.status_paid'),
               };
               return (
                 <TouchableOpacity
