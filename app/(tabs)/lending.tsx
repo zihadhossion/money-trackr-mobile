@@ -13,7 +13,6 @@ import { usePagination } from '../../src/hooks/usePagination';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
 import LendingItem from '../../src/components/ui/LendingItem';
 import LendingSummaryCards from '../../src/components/ui/LendingSummaryCards';
-import PaginationFooter from '../../src/components/ui/PaginationFooter';
 import EmptyState from '../../src/components/ui/EmptyState';
 import LendingForm from '../../src/components/forms/LendingForm';
 import RepaymentForm from '../../src/components/forms/RepaymentForm';
@@ -36,7 +35,7 @@ export default function LendingScreen() {
   const [repaying, setRepaying] = useState<Lending | null>(null);
   const [sheetMode, setSheetMode] = useState<SheetMode>(null);
 
-  const { data: lendings, loading, loadingMore, refreshing, hasMore, refresh, loadMore, onScroll } = usePagination<Lending>({
+  const { data: lendings, loading, refreshing, refresh, onScroll } = usePagination<Lending>({
     fetcher: useCallback(async (page, pageSize) => {
       const { startDate, endDate } = getMonthDateRange(year, month);
       const { lendings, totalPages } = await lendingService.getAll(startDate, endDate, page, pageSize);
@@ -150,13 +149,7 @@ export default function LendingScreen() {
                 onRepay={() => openRepay(item)}
               />
             ))}
-            <PaginationFooter
-              loadingMore={loadingMore}
-              hasMore={hasMore}
-              onLoadMore={loadMore}
-              color={colors.primary}
-              loadMoreText={t('common.load_more')}
-            />
+
           </>
         )}
       </ScrollView>

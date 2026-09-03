@@ -12,7 +12,6 @@ import { useBottomSheet } from '../../src/hooks/useBottomSheet';
 import { usePagination } from '../../src/hooks/usePagination';
 import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
 import TransactionItem from '../../src/components/ui/TransactionItem';
-import PaginationFooter from '../../src/components/ui/PaginationFooter';
 import EmptyState from '../../src/components/ui/EmptyState';
 import IncomeForm from '../../src/components/forms/IncomeForm';
 import { incomeService } from '../../src/services/incomeService';
@@ -33,7 +32,7 @@ export default function IncomeScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [saving, setSaving] = useState(false);
 
-  const { data: incomes, meta, loading, loadingMore, refreshing, hasMore, refresh, loadMore, onScroll } = usePagination<Income, { periodTotal: number }>({
+  const { data: incomes, meta, loading, refreshing, refresh, onScroll } = usePagination<Income, { periodTotal: number }>({
     fetcher: useCallback(async (page, pageSize) => {
       const { startDate, endDate } = getMonthDateRange(year, month);
       const { incomes, totalPages, periodTotal } = await incomeService.getAll(startDate, endDate, page, pageSize);
@@ -129,13 +128,7 @@ export default function IncomeScreen() {
                 onDelete={() => handleDelete(item)}
               />
             ))}
-            <PaginationFooter
-              loadingMore={loadingMore}
-              hasMore={hasMore}
-              onLoadMore={loadMore}
-              color={colors.primary}
-              loadMoreText={t('common.load_more')}
-            />
+
           </>
         )}
       </ScrollView>

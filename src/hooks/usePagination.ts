@@ -89,10 +89,10 @@ export function usePagination<T, M = undefined>({
   const onScroll = useCallback(({ nativeEvent }: { nativeEvent: NativeScrollEvent }) => {
     const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
     const threshold = 50;
-    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - threshold) {
+    if (!loading && layoutMeasurement.height + contentOffset.y >= contentSize.height - threshold) {
       loadMore();
     }
-  }, [loadMore]);
+  }, [loading, loadMore]);
 
   return { data, meta, loading, loadingMore, refreshing, hasMore, refresh, loadMore, onScroll };
 }
