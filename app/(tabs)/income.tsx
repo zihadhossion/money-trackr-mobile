@@ -136,6 +136,7 @@ export default function IncomeScreen() {
       <BottomSheet ref={sheetRef} index={-1} snapPoints={snapPoints} enablePanDownToClose backgroundStyle={{ backgroundColor: colors.bgPrimary }} handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
         <BottomSheetScrollView>
           <IncomeForm
+            key={editing?._id ?? 'add'}
             initial={editing ?? undefined}
             categories={categories}
             onSubmit={handleSubmit}

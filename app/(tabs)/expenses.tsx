@@ -159,6 +159,7 @@ export default function ExpensesScreen() {
       <BottomSheet ref={sheetRef} index={-1} snapPoints={snapPoints} enablePanDownToClose backgroundStyle={{ backgroundColor: colors.bgPrimary }} handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
         <BottomSheetScrollView>
           <ExpenseForm
+            key={editing?._id ?? 'add'}
             initial={editing ?? undefined}
             categories={categories}
             onSubmit={handleSubmit}

@@ -134,6 +134,7 @@ export default function CategoriesScreen() {
       <BottomSheet ref={sheetRef} index={-1} snapPoints={snapPoints} enablePanDownToClose backgroundStyle={{ backgroundColor: colors.bgPrimary }} handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
         <BottomSheetScrollView>
           <CategoryForm
+            key={editing?._id ?? 'add'}
             initial={editing ? { ...editing, type: tab } : { type: tab }}
             onSubmit={handleSubmit}
             onCancel={closeSheet}
