@@ -1,5 +1,5 @@
 import api from './api';
-import type { Lending, LendingSummary } from '../types';
+import type { Lending, LendingPayload, LendingSummary } from '../types';
 
 export interface PaginatedLendings {
   lendings: Lending[];
@@ -24,12 +24,12 @@ export const lendingService = {
     return data;
   },
 
-  async create(payload: Omit<Lending, '_id'>): Promise<Lending> {
+  async create(payload: LendingPayload): Promise<Lending> {
     const { data } = await api.post('/lending', payload);
     return data;
   },
 
-  async update(id: string, payload: Partial<Lending>): Promise<Lending> {
+  async update(id: string, payload: LendingPayload): Promise<Lending> {
     const { amount, personName, type, date, dueDate, status, remainingAmount, notes } = payload;
     const clean: Partial<Lending> = { amount, personName, type, date, dueDate, status, remainingAmount, notes };
     (Object.keys(clean) as (keyof typeof clean)[]).forEach((k) => clean[k] === undefined && delete clean[k]);

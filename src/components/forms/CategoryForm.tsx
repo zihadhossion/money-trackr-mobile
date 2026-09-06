@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { formStyles } from '../../theme/formStyles';
@@ -44,7 +45,7 @@ export default function CategoryForm({ initial, onSubmit, onCancel, loading }: C
 
       {/* Name */}
       <Text style={fs.label}>{t('categories.name_label')}</Text>
-      <TextInput style={fs.input} value={name} onChangeText={setName} placeholder={t('common.category_name_placeholder')} placeholderTextColor={colors.textMuted} />
+      <BottomSheetTextInput style={fs.input} value={name} onChangeText={setName} placeholder={t('common.category_name_placeholder')} placeholderTextColor={colors.textMuted} />
 
       {/* Type */}
       <Text style={fs.label}>{t('categories.type_label')}</Text>

@@ -12,6 +12,7 @@ import { useAuth } from '../../src/contexts/AuthContext';
 import { useLanguage } from '../../src/contexts/LanguageContext';
 import { settingsService } from '../../src/services/settingsService';
 import type { Settings } from '../../src/types';
+import { getErrorMessage } from '../../src/utils/error';
 
 export default function SettingsScreen() {
   const { colors, theme, setTheme } = useTheme();
@@ -41,8 +42,8 @@ export default function SettingsScreen() {
       });
       setSettings(updated);
       Alert.alert(t('common.success'), t('settings.settings_saved'));
-    } catch (e: any) {
-      Alert.alert(t('common.error'), e.message || t('settings.failed_save'));
+    } catch (e) {
+      Alert.alert(t('common.error'), getErrorMessage(e, t('settings.failed_save')));
     } finally {
       setSaving(false);
     }
@@ -147,6 +148,21 @@ export default function SettingsScreen() {
             <Text style={s.saveBtnText}>{saving ? t('common.saving') : t('settings.save_settings')}</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Categories */}
+        <TouchableOpacity
+          style={[s.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor, flexDirection: 'row', alignItems: 'center' }]}
+          onPress={() => router.push('/categories')}
+        >
+          <View style={[s.guideIconBox, { backgroundColor: `${colors.primary}20` }]}>
+            <Feather name="grid" size={22} color={colors.primary} />
+          </View>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('settings.categories')}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 13 }}>{t('settings.categories_subtitle')}</Text>
+          </View>
+          <Feather name="chevron-right" size={20} color={colors.textMuted} />
+        </TouchableOpacity>
 
         {/* Usage Guide */}
         <TouchableOpacity

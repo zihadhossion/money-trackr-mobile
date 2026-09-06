@@ -8,13 +8,14 @@
     "userInterfaceStyle": "automatic",
     "scheme": "moneytrackr",
     "splash": {
-      "image": "./assets/splash-bg.png",
-      "backgroundColor": "#0F3D4A"
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#6366f1"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#6366f1",
-        "foregroundImage": "./assets/icon.png"
+        "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "package": "com.moneytrackr.mobile",
       "predictiveBackGestureEnabled": false

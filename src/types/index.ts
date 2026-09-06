@@ -46,6 +46,14 @@ export interface Lending {
   notes: string;
 }
 
+/**
+ * Create/update payload for a lending. `status` and `remainingAmount` are set by
+ * the server on create (CreateLendingDto rejects them), so they are optional here
+ * and only sent when editing.
+ */
+export type LendingPayload = Omit<Lending, '_id' | 'status' | 'remainingAmount'> &
+  Partial<Pick<Lending, 'status' | 'remainingAmount'>>;
+
 export interface Settings {
   currency: string;
   monthlyBudget: number;
@@ -74,4 +82,22 @@ export interface TrendData {
 export interface LendingSummary {
   totalLent: number;
   totalBorrowed: number;
+}
+
+export interface Note {
+  _id: string;
+  title: string;
+  content: string;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type NotePayload = Pick<Note, 'title' | 'content' | 'color'>;
+
+export interface NotesPage {
+  notes: Note[];
+  total: number;
+  page: number;
+  totalPages: number;
 }

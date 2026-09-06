@@ -52,10 +52,12 @@ export const darkColors: typeof lightColors = {
   bgPrimary: '#0f172a',
   bgSecondary: '#020617',
   bgTertiary: '#1e293b',
-  textPrimary: '#f8fafc',
+  // Just off pure white: #f8fafc haloes on a near-black surface, #e2e8f0 reads flat
+  textPrimary: '#f1f5f9',
   textSecondary: '#cbd5e1',
   textMuted: '#94a3b8',
-  borderColor: '#1e293b',
+  // One step lighter than bgTertiary, so a border stays visible on every surface
+  borderColor: '#334155',
 
   primary: '#6366f1',
   primaryLight: '#818cf8',
@@ -65,18 +67,20 @@ export const darkColors: typeof lightColors = {
   danger: '#ef4444',
   rose: '#f43f5e',
 
-  // Semantic background variants
-  successBg: '#d1fae5',
-  dangerBg: '#fee2e2',
-  warningBg: '#fef3c7',
-  primaryBg: '#e0e7ff',
-  secondaryBg: '#ede9fe',
+  // Semantic background variants — alpha tints of the accent, not solid pastels.
+  // Solid light-theme pastels glare on a dark surface; a low-alpha tint of the
+  // accent sits on whatever surface is behind it (Material 3 surface-tint idea).
+  successBg: 'rgba(16, 185, 129, 0.15)',
+  dangerBg: 'rgba(239, 68, 68, 0.15)',
+  warningBg: 'rgba(245, 158, 11, 0.15)',
+  primaryBg: 'rgba(99, 102, 241, 0.18)',
+  secondaryBg: 'rgba(139, 92, 246, 0.18)',
 
-  // Status text colors
-  successText: '#065f46',
-  dangerText: '#991b1b',
-  warningText: '#92400e',
-  primaryText: '#3730a3',
+  // Status text colors — light shades, readable on the tints above
+  successText: '#6ee7b7',
+  dangerText: '#fca5a5',
+  warningText: '#fcd34d',
+  primaryText: '#a5b4fc',
 
   surface50: '#f8fafc',
   surface100: '#f1f5f9',

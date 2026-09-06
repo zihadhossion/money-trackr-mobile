@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { formatCurrency } from '../../utils/currency';
 import type { LendingSummary } from '../../types';
+import { SUMMARY_CARD as C } from '../../theme/shapes';
 
 interface LendingSummaryCardsProps {
   summary: LendingSummary;
@@ -18,12 +19,12 @@ export default React.memo(function LendingSummaryCards({ summary }: LendingSumma
     <View style={styles.row}>
       <View style={[styles.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
         <Feather name="arrow-up-right" size={16} color={colors.success} />
-        <Text style={[styles.label, { color: colors.textMuted }]}>{t('lending.total_lent')}</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>{t('lending.total_lent')}</Text>
         <Text style={[styles.amount, { color: colors.success }]}>{formatCurrency(summary.totalLent)}</Text>
       </View>
       <View style={[styles.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
         <Feather name="arrow-down-left" size={16} color={colors.danger} />
-        <Text style={[styles.label, { color: colors.textMuted }]}>{t('lending.total_borrowed')}</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>{t('lending.total_borrowed')}</Text>
         <Text style={[styles.amount, { color: colors.danger }]}>{formatCurrency(summary.totalBorrowed)}</Text>
       </View>
     </View>
@@ -32,7 +33,7 @@ export default React.memo(function LendingSummaryCards({ summary }: LendingSumma
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 12, marginBottom: 12 },
-  card: { flex: 1, borderRadius: 14, padding: 14, borderWidth: 1, gap: 4 },
+  card: { flex: 1, borderRadius: C.radius, padding: C.padding, borderWidth: 1, gap: 4 },
   label: { fontSize: 12 },
   amount: { fontSize: 17, fontWeight: '700' },
 });

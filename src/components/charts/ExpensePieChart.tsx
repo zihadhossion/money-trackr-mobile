@@ -33,8 +33,12 @@ export default React.memo(function ExpensePieChart({ data, currency = '৳' }: E
         <PieChart
           data={chartData}
           donut
-          innerRadius={55}
-          radius={80}
+          // Without innerCircleColor the donut hole defaults to white, which
+          // glares on the dark card. The wider ring keeps the % labels (drawn
+          // 'outward' by default for donuts) inside the band, not over the hole.
+          innerCircleColor={colors.bgPrimary}
+          innerRadius={48}
+          radius={85}
           showText
           textColor="#fff"
           textSize={11}

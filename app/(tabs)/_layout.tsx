@@ -55,10 +55,6 @@ export default function TabsLayout() {
         options={{ title: t('tabs.lending'), tabBarIcon: ({ color, size }) => <Feather name="repeat" size={size} color={color} /> }}
       />
       <Tabs.Screen
-        name="categories"
-        options={{ title: t('tabs.categories'), tabBarIcon: ({ color, size }) => <Feather name="grid" size={size} color={color} /> }}
-      />
-      <Tabs.Screen
         name="settings"
         options={{ title: t('tabs.settings'), tabBarIcon: ({ color, size }) => <Feather name="settings" size={size} color={color} /> }}
       />

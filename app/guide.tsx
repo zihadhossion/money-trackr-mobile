@@ -61,7 +61,12 @@ export default function GuideScreen() {
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.bgSecondary }]}>
       <View style={[s.header, { backgroundColor: colors.bgSecondary }]}>
-        <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={s.backBtn}
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.back')}
+        >
           <Feather name="arrow-left" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={[s.pageTitle, { color: colors.textPrimary }]}>{t('guide.title')}</Text>
@@ -99,7 +104,7 @@ export default function GuideScreen() {
 const styles = (colors: any) => StyleSheet.create({
   safe: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
-  backBtn: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
+  backBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
   pageTitle: { flex: 1, fontSize: 18, fontWeight: '700', textAlign: 'center' },
   scroll: { padding: 16, paddingBottom: 60, gap: 12 },
   card: { borderRadius: 16, padding: 16, borderWidth: 1, gap: 10 },

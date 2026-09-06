@@ -8,6 +8,7 @@ import { formatDate, DATE_FNS_LOCALES } from '../../utils/date';
 import type { Lending } from '../../types';
 import { LendingType } from '../../enums/lending-type.enum';
 import { LendingStatus } from '../../enums/lending-status.enum';
+import { LENDING_CARD as C } from '../../theme/shapes';
 
 interface LendingItemProps {
   item: Lending;
@@ -29,54 +30,84 @@ export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay
   };
   const statusStyle = statusColors[item.status] ?? statusColors[LendingStatus.PENDING];
 
+  const typeLabel = isLent ? t('lending.lent') : t('lending.borrowed');
+  const statusLabel = item.status === LendingStatus.PAID
+    ? t('lending.status_paid')
+    : item.status === LendingStatus.PARTIAL
+      ? t('lending.status_partial')
+      : t('lending.status_pending');
+  const cardLabel = t('a11y.lending_item', {
+    type: typeLabel,
+    name: item.personName,
+    amount: `৳${item.amount.toLocaleString()}`,
+    remaining: `৳${item.remainingAmount.toLocaleString()}`,
+    status: statusLabel,
+  });
+
   return (
     <View style={[styles.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={[styles.typeIcon, { backgroundColor: isLent ? colors.successBg : colors.dangerBg }]}>
-            <Feather name={isLent ? 'arrow-up-right' : 'arrow-down-left'} size={16} color={isLent ? colors.success : colors.danger} />
+      <View style={styles.details} accessible accessibilityRole="text" accessibilityLabel={cardLabel}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <View style={[styles.typeIcon, { backgroundColor: isLent ? colors.successBg : colors.dangerBg }]}>
+              <Feather name={isLent ? 'arrow-up-right' : 'arrow-down-left'} size={16} color={isLent ? colors.success : colors.danger} />
+            </View>
+            <View>
+              <Text style={[styles.name, { color: colors.textPrimary }]}>{item.personName}</Text>
+              <Text style={[styles.typeLabel, { color: colors.textSecondary }]}>{typeLabel} • {formatDate(item.date, DATE_FNS_LOCALES[language])}</Text>
+            </View>
           </View>
+          <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+            <Text style={[styles.statusText, { color: statusStyle.text }]}>{statusLabel}</Text>
+          </View>
+        </View>
+
+        <View style={styles.amountRow}>
           <View>
-            <Text style={[styles.name, { color: colors.textPrimary }]}>{item.personName}</Text>
-            <Text style={[styles.typeLabel, { color: colors.textMuted }]}>{isLent ? t('lending.lent') : t('lending.borrowed')} • {formatDate(item.date, DATE_FNS_LOCALES[language])}</Text>
+            <Text style={[styles.amountLabel, { color: colors.textMuted }]}>{t('lending.amount')}</Text>
+            <Text style={[styles.amount, { color: colors.textPrimary }]}>{'৳'}{item.amount.toLocaleString()}</Text>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={[styles.amountLabel, { color: colors.textMuted }]}>{t('lending.remaining')}</Text>
+            <Text style={[styles.amount, { color: item.remainingAmount > 0 ? colors.warning : colors.success }]}>
+              {'৳'}{item.remainingAmount.toLocaleString()}
+            </Text>
           </View>
         </View>
-        <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
-          <Text style={[styles.statusText, { color: statusStyle.text }]}>
-            {item.status === LendingStatus.PAID ? t('lending.status_paid') : item.status === LendingStatus.PARTIAL ? t('lending.status_partial') : t('lending.status_pending')}
-          </Text>
-        </View>
-      </View>
 
-      <View style={styles.amountRow}>
-        <View>
-          <Text style={[styles.amountLabel, { color: colors.textMuted }]}>{t('lending.amount')}</Text>
-          <Text style={[styles.amount, { color: colors.textPrimary }]}>{'৳'}{item.amount.toLocaleString()}</Text>
-        </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={[styles.amountLabel, { color: colors.textMuted }]}>{t('lending.remaining')}</Text>
-          <Text style={[styles.amount, { color: item.remainingAmount > 0 ? colors.warning : colors.success }]}>
-            {'৳'}{item.remainingAmount.toLocaleString()}
-          </Text>
-        </View>
+        {item.dueDate && (
+          <Text style={[styles.dueDate, { color: colors.textSecondary }]}>{t('lending.due', { date: formatDate(item.dueDate, DATE_FNS_LOCALES[language]) })}</Text>
+        )}
       </View>
-
-      {item.dueDate && (
-        <Text style={[styles.dueDate, { color: colors.textMuted }]}>{t('lending.due', { date: formatDate(item.dueDate, DATE_FNS_LOCALES[language]) })}</Text>
-      )}
 
       <View style={styles.actions}>
         {item.status !== LendingStatus.PAID && (
-          <TouchableOpacity style={[styles.btn, { backgroundColor: colors.successBg }]} onPress={onRepay}>
+          <TouchableOpacity
+            style={[styles.btn, { backgroundColor: colors.successBg }]}
+            onPress={onRepay}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.repay_lending', { name: item.personName })}
+          >
             <Feather name="check-circle" size={13} color={colors.success} />
             <Text style={[styles.btnText, { color: colors.success }]}>{t('lending.repay')}</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={[styles.btn, { backgroundColor: `${colors.primary}15` }]} onPress={onEdit}>
+        <TouchableOpacity
+          style={[styles.btn, { backgroundColor: `${colors.primary}15` }]}
+          onPress={onEdit}
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.edit_lending', { name: item.personName })}
+        >
           <Feather name="edit-2" size={13} color={colors.primary} />
           <Text style={[styles.btnText, { color: colors.primary }]}>{t('common.edit')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.btn, { backgroundColor: colors.dangerBg }]} onPress={onDelete}>
+        <TouchableOpacity
+          style={[styles.btn, { backgroundColor: colors.dangerBg }]}
+          onPress={onDelete}
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.delete_lending', { name: item.personName })}
+          accessibilityHint={t('a11y.delete_hint')}
+        >
           <Feather name="trash-2" size={13} color={colors.danger} />
           <Text style={[styles.btnText, { color: colors.danger }]}>{t('common.delete')}</Text>
         </TouchableOpacity>
@@ -86,10 +117,11 @@ export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay
 });
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 14, padding: 14, borderWidth: 1, marginBottom: 10, gap: 12 },
+  card: { borderRadius: C.radius, padding: C.padding, borderWidth: 1, marginBottom: C.marginBottom, gap: C.gap },
+  details: { gap: C.gap },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  typeIcon: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  typeIcon: { width: C.iconSize, height: C.iconSize, borderRadius: C.iconRadius, justifyContent: 'center', alignItems: 'center' },
   name: { fontSize: 15, fontWeight: '600' },
   typeLabel: { fontSize: 12 },
   statusBadge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
@@ -99,6 +131,6 @@ const styles = StyleSheet.create({
   amount: { fontSize: 16, fontWeight: '700' },
   dueDate: { fontSize: 12 },
   actions: { flexDirection: 'row', gap: 8 },
-  btn: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  btn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, borderRadius: 8, paddingHorizontal: 12, minHeight: C.actionHeight },
   btnText: { fontSize: 12, fontWeight: '600' },
 });

@@ -30,7 +30,7 @@ export default React.memo(function TrendsBarChart({ data }: TrendsBarChartProps)
       frontColor: colors.success,
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: { color: colors.textMuted, fontSize: 10 },
+      labelTextStyle: { color: colors.textSecondary, fontSize: 10 },
     },
     {
       value: item.expenses,
@@ -58,7 +58,7 @@ export default React.memo(function TrendsBarChart({ data }: TrendsBarChartProps)
         noOfSections={4}
         maxValue={Math.max(...data.map((d) => Math.max(d.income, d.expenses)), 100) * 1.2}
         width={screenWidth - 80}
-        yAxisTextStyle={{ color: colors.textMuted, fontSize: 10 }}
+        yAxisTextStyle={{ color: colors.textSecondary, fontSize: 10 }}
         rulesColor={colors.borderColor}
         yAxisColor={colors.borderColor}
         xAxisColor={colors.borderColor}

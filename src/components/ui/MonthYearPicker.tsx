@@ -14,7 +14,7 @@ interface MonthYearPickerProps {
 export default React.memo(function MonthYearPicker({ month, year, onMonthChange, onYearChange }: MonthYearPickerProps) {
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const monthsShort = t('months_short', { returnObjects: true }) as string[];
+  const monthsShort = t('months_short', { returnObjects: true }) as readonly string[];
 
   return (
     <View style={styles.container}>
@@ -27,8 +27,11 @@ export default React.memo(function MonthYearPicker({ month, year, onMonthChange,
               key={m}
               style={[styles.monthChip, { backgroundColor: isActive ? colors.primary : colors.bgTertiary, borderColor: isActive ? colors.primary : colors.borderColor }]}
               onPress={() => onMonthChange(i + 1)}
+              accessibilityRole="button"
+              accessibilityLabel={m}
+              accessibilityState={{ selected: isActive }}
             >
-              <Text style={[styles.monthText, { color: isActive ? '#fff' : colors.textMuted }]}>{m}</Text>
+              <Text style={[styles.monthText, { color: isActive ? '#fff' : colors.textSecondary }]}>{m}</Text>
             </TouchableOpacity>
           );
         })}
@@ -36,11 +39,21 @@ export default React.memo(function MonthYearPicker({ month, year, onMonthChange,
 
       {/* Year selector */}
       <View style={styles.yearRow}>
-        <TouchableOpacity onPress={() => onYearChange(year - 1)} hitSlop={8}>
+        <TouchableOpacity
+          style={styles.yearBtn}
+          onPress={() => onYearChange(year - 1)}
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.previous_year')}
+        >
           <Feather name="chevron-left" size={20} color={colors.textSecondary} />
         </TouchableOpacity>
         <Text style={[styles.yearText, { color: colors.textPrimary }]}>{year}</Text>
-        <TouchableOpacity onPress={() => onYearChange(year + 1)} hitSlop={8}>
+        <TouchableOpacity
+          style={styles.yearBtn}
+          onPress={() => onYearChange(year + 1)}
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.next_year')}
+        >
           <Feather name="chevron-right" size={20} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
@@ -51,7 +64,8 @@ export default React.memo(function MonthYearPicker({ month, year, onMonthChange,
 const styles = StyleSheet.create({
   container: { gap: 10, marginBottom: 12 },
   monthRow: { gap: 6, paddingHorizontal: 2 },
-  monthChip: { borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
+  monthChip: { borderRadius: 8, paddingHorizontal: 12, minHeight: 44, justifyContent: 'center', borderWidth: 1 },
+  yearBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
   monthText: { fontSize: 13, fontWeight: '500' },
   yearRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
   yearText: { fontSize: 16, fontWeight: '700', minWidth: 50, textAlign: 'center' },

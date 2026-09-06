@@ -1,18 +1,19 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { formStyles } from '../../theme/formStyles';
-import type { Lending } from '../../types';
+import type { Lending, LendingPayload } from '../../types';
 import { LendingType } from '../../enums/lending-type.enum';
 import { LendingStatus } from '../../enums/lending-status.enum';
 import { toISODate } from '../../utils/date';
 
 interface LendingFormProps {
   initial?: Partial<Lending>;
-  onSubmit: (data: Omit<Lending, '_id'>) => Promise<void>;
+  onSubmit: (data: LendingPayload) => Promise<void>;
   onCancel: () => void;
   loading?: boolean;
 }
@@ -38,9 +39,12 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
     if (!amount || isNaN(Number(amount))) return Alert.alert(t('common.validation'), t('validation.valid_amount'));
     if (!personName.trim()) return Alert.alert(t('common.validation'), t('validation.enter_person_name'));
     await onSubmit({
-      amount: Number(amount), personName, type, status,
+      amount: Number(amount), personName, type,
       date: toISODate(date), dueDate: dueDate ? toISODate(dueDate) : undefined,
-      notes, remainingAmount: Number(amount),
+      notes,
+      // CreateLendingDto rejects these (forbidNonWhitelisted), so send them only
+      // when editing — on create the server sets them itself.
+      ...(isEdit ? { status, remainingAmount: Number(amount) } : {}),
     });
   }
 
@@ -63,12 +67,12 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
       </View>
 
       <Text style={fs.label}>{t('common.person_name')}</Text>
-      <TextInput style={fs.input} value={personName} onChangeText={setPersonName} placeholder={t('common.person_name_placeholder')} placeholderTextColor={colors.textMuted} />
+      <BottomSheetTextInput style={fs.input} value={personName} onChangeText={setPersonName} placeholder={t('common.person_name_placeholder')} placeholderTextColor={colors.textMuted} />
 
       <Text style={fs.label}>{t('common.amount_required')}</Text>
       <View style={fs.inputRow}>
         <Text style={fs.currencySymbol}>৳</Text>
-        <TextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} />
+        <BottomSheetTextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} />
       </View>
 
       <Text style={fs.label}>{t('common.date')}</Text>
@@ -114,7 +118,7 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
       )}
 
       <Text style={fs.label}>{t('common.notes')}</Text>
-      <TextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} />
+      <BottomSheetTextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} />
 
       <View style={fs.buttons}>
         <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>

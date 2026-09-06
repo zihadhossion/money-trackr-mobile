@@ -1,20 +1,23 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
-  Alert, RefreshControl, ActivityIndicator,
+  Alert, RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../src/contexts/ThemeContext';
-import { useBottomSheet } from '../../src/hooks/useBottomSheet';
-import CategoryCard from '../../src/components/ui/CategoryCard';
-import CategoryForm from '../../src/components/forms/CategoryForm';
-import EmptyState from '../../src/components/ui/EmptyState';
-import { categoryService } from '../../src/services/categoryService';
-import { screenStyles } from '../../src/theme/screenStyles';
-import type { Category } from '../../src/types';
+import { useTheme } from '../src/contexts/ThemeContext';
+import { useBottomSheet } from '../src/hooks/useBottomSheet';
+import CategoryCard from '../src/components/ui/CategoryCard';
+import CategoryForm from '../src/components/forms/CategoryForm';
+import EmptyState from '../src/components/ui/EmptyState';
+import CategoryGridSkeleton from '../src/components/skeletons/CategoryGridSkeleton';
+import { categoryService } from '../src/services/categoryService';
+import { screenStyles } from '../src/theme/screenStyles';
+import type { Category } from '../src/types';
+import { getErrorMessage } from '../src/utils/error';
 
 type TabType = 'expense' | 'income';
 
@@ -30,7 +33,7 @@ export default function CategoriesScreen() {
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const { sheetRef, snapPoints, editing, openAdd, openEdit, closeSheet } = useBottomSheet<Category>();
+  const { sheetRef, snapPoints, editing, formKey, openAdd, openEdit, closeSheet } = useBottomSheet<Category>();
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -59,8 +62,8 @@ export default function CategoriesScreen() {
         setCategories((prev) => [...prev, created]);
       }
       closeSheet();
-    } catch (e: any) {
-      Alert.alert(t('common.error'), e.message || t('common.error'));
+    } catch (e) {
+      Alert.alert(t('common.error'), getErrorMessage(e));
     } finally {
       setSaving(false);
     }
@@ -75,8 +78,8 @@ export default function CategoriesScreen() {
           try {
             await categoryService.delete(cat._id);
             setCategories((prev) => prev.filter((c) => c._id !== cat._id));
-          } catch (e: any) {
-            Alert.alert(t('common.error'), e.message || t('common.error'));
+          } catch (e) {
+            Alert.alert(t('common.error'), getErrorMessage(e));
           }
         },
       },
@@ -86,7 +89,17 @@ export default function CategoriesScreen() {
   return (
     <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
       <View style={[ss.header, { paddingBottom: 12 }]}>
-        <Text style={[ss.title, { color: colors.textPrimary }]}>{t('categories.title')}</Text>
+        <View style={s.headerLeft}>
+          <TouchableOpacity
+            style={s.backBtn}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.back')}
+          >
+            <Feather name="arrow-left" size={22} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={[ss.title, { color: colors.textPrimary }]}>{t('categories.title')}</Text>
+        </View>
         <TouchableOpacity style={[ss.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
           <Feather name="plus" size={20} color="#fff" />
           <Text style={ss.addBtnText}>{t('common.add')}</Text>
@@ -101,7 +114,7 @@ export default function CategoriesScreen() {
             style={[s.tab, tab === tabType && { backgroundColor: colors.primary }]}
             onPress={() => setTab(tabType)}
           >
-            <Text style={[s.tabText, { color: tab === tabType ? '#fff' : colors.textMuted }]}>
+            <Text style={[s.tabText, { color: tab === tabType ? '#fff' : colors.textSecondary }]}>
               {tabType === 'expense' ? t('categories.tab_expenses') : t('categories.tab_income')}
             </Text>
           </TouchableOpacity>
@@ -110,10 +123,14 @@ export default function CategoriesScreen() {
 
       <ScrollView
         contentContainerStyle={ss.scroll}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchCategories(); }} tintColor={colors.primary} />}
+        scrollEnabled={!loading}
+        refreshControl={
+          loading ? undefined
+            : <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchCategories(); }} tintColor={colors.primary} />
+        }
       >
         {loading ? (
-          <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
+          <CategoryGridSkeleton />
         ) : filtered.length === 0 ? (
           <EmptyState icon="grid" title={tab === 'expense' ? t('categories.empty_expense') : t('categories.empty_income')} subtitle={t('categories.empty_subtitle')} onAction={openAdd} actionLabel={t('categories.add')} />
         ) : (
@@ -131,10 +148,20 @@ export default function CategoriesScreen() {
         )}
       </ScrollView>
 
-      <BottomSheet ref={sheetRef} index={-1} snapPoints={snapPoints} enablePanDownToClose backgroundStyle={{ backgroundColor: colors.bgPrimary }} handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
+      <BottomSheet
+        ref={sheetRef}
+        index={-1}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
+        backgroundStyle={{ backgroundColor: colors.bgPrimary }}
+        handleIndicatorStyle={{ backgroundColor: colors.borderColor }}
+      >
         <BottomSheetScrollView>
           <CategoryForm
-            key={editing?._id ?? 'add'}
+            key={formKey}
             initial={editing ? { ...editing, type: tab } : { type: tab }}
             onSubmit={handleSubmit}
             onCancel={closeSheet}
@@ -147,6 +174,8 @@ export default function CategoriesScreen() {
 }
 
 const localStyles = StyleSheet.create({
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  backBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'flex-start' },
   tabs: { flexDirection: 'row', marginHorizontal: 16, borderRadius: 12, borderWidth: 1, overflow: 'hidden', marginBottom: 8 },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
   tabText: { fontSize: 14, fontWeight: '600' },

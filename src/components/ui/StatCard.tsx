@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Colors } from '../../theme/colors';
+import { STAT_CARD as C } from '../../theme/shapes';
 
 type Variant = 'success' | 'danger' | 'primary' | 'warning' | 'secondary';
 
@@ -35,7 +36,7 @@ export default React.memo(function StatCard({ title, value, icon, variant = 'pri
       <View style={[styles.iconWrap, { backgroundColor: cfg.iconBg }]}>
         <Feather name={icon} size={20} color={cfg.iconColor} />
       </View>
-      <Text style={[styles.title, { color: colors.textMuted }]} numberOfLines={1}>{title}</Text>
+      <Text style={[styles.title, { color: colors.textSecondary }]} numberOfLines={1}>{title}</Text>
       <Text style={[styles.value, { color: colors.textPrimary }]} numberOfLines={1}>{value}</Text>
       {subtitle && <Text style={[styles.subtitle, { color: colors.textMuted }]} numberOfLines={1}>{subtitle}</Text>}
       {trend !== undefined && (
@@ -57,16 +58,16 @@ export default React.memo(function StatCard({ title, value, icon, variant = 'pri
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: C.radius,
+    padding: C.padding,
     borderWidth: 1,
     gap: 6,
-    minHeight: 110,
+    minHeight: C.minHeight,
   },
   iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: C.iconSize,
+    height: C.iconSize,
+    borderRadius: C.iconRadius,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 4,

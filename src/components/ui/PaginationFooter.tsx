@@ -1,41 +1,29 @@
 import React from 'react';
-import { View, ActivityIndicator, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 interface PaginationFooterProps {
   loadingMore: boolean;
-  hasMore: boolean;
-  onLoadMore: () => void;
   color: string;
-  loadMoreText: string;
 }
 
-export default function PaginationFooter({
-  loadingMore,
-  hasMore,
-  onLoadMore,
-  color,
-  loadMoreText,
-}: PaginationFooterProps) {
-  if (loadingMore) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator color={color} />
-      </View>
-    );
-  }
+/**
+ * Only ever a spinner: FlatList's onEndReached already loads the next page as
+ * soon as the list is scrolled to the end, so a manual "load more" button was
+ * replaced by the spinner before anyone could tap it.
+ */
+export default function PaginationFooter({ loadingMore, color }: PaginationFooterProps) {
+  const { t } = useTranslation();
 
-  if (hasMore) {
-    return (
-      <TouchableOpacity style={styles.container} onPress={onLoadMore}>
-        <Text style={[styles.text, { color }]}>{loadMoreText}</Text>
-      </TouchableOpacity>
-    );
-  }
+  if (!loadingMore) return null;
 
-  return null;
+  return (
+    <View style={styles.container} accessible accessibilityLabel={t('a11y.loading_more')}>
+      <ActivityIndicator color={color} />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  container: { paddingVertical: 16, alignItems: 'center' },
-  text: { fontSize: 14, fontWeight: '600' },
+  container: { minHeight: 48, paddingVertical: 16, alignItems: 'center', justifyContent: 'center' },
 });
