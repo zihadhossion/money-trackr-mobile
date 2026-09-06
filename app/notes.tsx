@@ -153,7 +153,8 @@ export default function NotesScreen() {
       <ScrollView
         contentContainerStyle={ss.scroll}
         keyboardShouldPersistTaps="handled"
-        scrollEnabled={!loading}
+        // No pull-to-refresh mid-load: it would fire a duplicate request on top
+        // of the one already in flight. Scrolling stays enabled.
         refreshControl={
           loading ? undefined : (
             <RefreshControl

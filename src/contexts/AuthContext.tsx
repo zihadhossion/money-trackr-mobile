@@ -4,8 +4,9 @@ import {
   statusCodes,
   isSuccessResponse,
 } from '@react-native-google-signin/google-signin';
-import api from '../services/api';
-import { getAccessToken, setAccessToken, setRefreshToken, setUserData, getUserData, clearAuthStorage } from '../utils/storage';
+import api, { setOnAuthFailure } from '../services/api';
+import { getAccessToken, getRefreshToken, setAccessToken, setRefreshToken, setUserData, getUserData, clearAuthStorage } from '../utils/storage';
+import { isTokenExpired } from '../utils/jwt';
 import type { User } from '../types';
 
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '';
@@ -40,30 +41,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       iosClientId: GOOGLE_IOS_CLIENT_ID,
       scopes: ['openid', 'profile', 'email'],
     });
-    checkAuth();
+    bootstrap();
+
+    // The response interceptor clears storage when a refresh fails; mirror that
+    // here so the context stops reporting an authenticated user.
+    setOnAuthFailure(() => setUser(null));
+    return () => setOnAuthFailure(null);
   }, []);
 
-  async function checkAuth() {
+  /**
+   * Decides from local storage alone whether there is a session to restore, so
+   * a cold start never waits on the network before the splash can go. The
+   * access token lives 15 minutes and is therefore almost always stale on
+   * launch; the refresh token's 7 day life is what actually says whether the
+   * user is still signed in, and its `exp` can be read without asking the
+   * server.
+   */
+  async function bootstrap() {
     try {
-      const token = await getAccessToken();
-      if (!token) {
-        const cachedUser = await getUserData();
-        if (cachedUser) {
-          setUser(JSON.parse(cachedUser));
-        }
-        setLoading(false);
+      const [accessToken, refreshToken, cachedUser] = await Promise.all([
+        getAccessToken(),
+        getRefreshToken(),
+        getUserData(),
+      ]);
+
+      // Nothing to restore, or the refresh token outlived its 7 days. Decide it
+      // here rather than paying a round trip to be told the same thing.
+      if (!accessToken || isTokenExpired(refreshToken)) {
+        await clearAuthStorage();
+        setUser(null);
         return;
       }
 
+      if (cachedUser) {
+        setUser(JSON.parse(cachedUser));
+        verifySession();
+        return;
+      }
+
+      // A token but no cached profile: there is nothing to render a session
+      // from, so this is the one path that has to wait for the server.
+      await verifySession();
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /**
+   * Confirms the restored session against the server and refreshes the cached
+   * profile. Runs unawaited on the common path, so a slow or failing request
+   * costs the user nothing at launch.
+   */
+  async function verifySession() {
+    try {
       const res = await api.get('/auth/verify');
       if (res.data.user) {
         setUser(res.data.user);
         await setUserData(JSON.stringify(res.data.user));
       }
-    } catch {
+    } catch (err: any) {
+      // A rejected session is genuinely dead — the interceptor already tried a
+      // refresh before this reached us. An unreachable server keeps its tokens
+      // so the next online launch restores the session without a fresh Google
+      // sign-in; either way the user goes to the login screen rather than to a
+      // dashboard that could only show zeros.
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        await clearAuthStorage();
+      }
       setUser(null);
-    } finally {
-      setLoading(false);
     }
   }
 

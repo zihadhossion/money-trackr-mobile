@@ -83,9 +83,8 @@ export default function DashboardScreen() {
     <SafeAreaView style={[s.safe, { backgroundColor: colors.bgSecondary }]}>
       <ScrollView
         contentContainerStyle={s.scroll}
-        // While the first load runs there is nothing to scroll to, and pulling
-        // to refresh would queue a second request on top of the one in flight.
-        scrollEnabled={!loading}
+        // No pull-to-refresh mid-load: it would fire a duplicate request on top
+        // of the one already in flight. Scrolling stays enabled.
         refreshControl={
           loading ? undefined
             : <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />

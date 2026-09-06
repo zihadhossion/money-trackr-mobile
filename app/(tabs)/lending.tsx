@@ -245,7 +245,8 @@ export default function LendingScreen() {
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
         contentContainerStyle={ss.scroll}
-        scrollEnabled={!loading}
+        // No pull-to-refresh mid-load: it would fire a duplicate request on top
+        // of the one already in flight. Scrolling stays enabled.
         refreshControl={
           loading ? undefined
             : <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />

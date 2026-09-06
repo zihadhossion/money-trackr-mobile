@@ -1,6 +1,11 @@
 import '../src/locales';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Stack } from 'expo-router';
+import {
+  ThemeProvider as NavigationThemeProvider,
+  DefaultTheme,
+  DarkTheme,
+} from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
@@ -13,7 +18,7 @@ import { useAuth } from '../src/contexts/AuthContext';
 SplashScreen.preventAutoHideAsync();
 
 function InnerLayout() {
-  const { isDark } = useTheme();
+  const { isDark, colors } = useTheme();
   const { loading } = useAuth();
 
   // The native splash carries the app logo and is already on screen before any
@@ -25,16 +30,27 @@ function InnerLayout() {
     }
   }, [loading]);
 
+  // expo-router hands React Navigation its light DefaultTheme regardless of
+  // what the app is doing, so every screen's own background is a near-white
+  // rgb(242,242,242). That shows through wherever a screen renders nothing —
+  // most visibly while (tabs) redirects an unauthenticated user to login.
+  const navigationTheme = useMemo(() => {
+    const base = isDark ? DarkTheme : DefaultTheme;
+    return { ...base, colors: { ...base.colors, background: colors.bgSecondary } };
+  }, [isDark, colors.bgSecondary]);
+
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="guide" options={{ headerShown: false }} />
-        <Stack.Screen name="categories" options={{ headerShown: false }} />
-        <Stack.Screen name="notes" options={{ headerShown: false }} />
-      </Stack>
+      <NavigationThemeProvider value={navigationTheme}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="guide" options={{ headerShown: false }} />
+          <Stack.Screen name="categories" options={{ headerShown: false }} />
+          <Stack.Screen name="notes" options={{ headerShown: false }} />
+        </Stack>
+      </NavigationThemeProvider>
     </>
   );
 }

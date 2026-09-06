@@ -5,6 +5,16 @@ import { languageStore } from '../locales/languageStore';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api';
 
+// The interceptor below can decide a session is dead, but it lives outside
+// React and cannot clear AuthContext's user on its own. Without that, the
+// context still reports the user as authenticated while storage is empty, and
+// the login screen bounces straight back into the tabs — an endless redirect.
+let onAuthFailure: (() => void) | null = null;
+
+export function setOnAuthFailure(handler: (() => void) | null) {
+  onAuthFailure = handler;
+}
+
 const api = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
@@ -47,6 +57,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch {
         await clearAuthStorage();
+        onAuthFailure?.();
         router.replace('/(auth)/login');
       }
     }
