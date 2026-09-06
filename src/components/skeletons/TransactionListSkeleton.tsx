@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Skeleton from '../ui/Skeleton';
 import { useTheme } from '../../contexts/ThemeContext';
-import { TRANSACTION_ROW as R } from '../../theme/shapes';
+import { TRANSACTION_ROW as R, ROW_ACTION as A } from '../../theme/shapes';
 
 /** Mirrors TransactionItem. Geometry comes from the shared shape so the two
  *  cannot drift apart and make the list jump when data arrives. */
@@ -44,5 +44,5 @@ const styles = StyleSheet.create({
   right: { alignItems: 'flex-end', gap: 2 },
   actions: { flexDirection: 'row' },
   // Each block is centred in a full 44px slot, exactly like the real buttons.
-  action: { marginHorizontal: (R.actionSize - 20) / 2, marginVertical: (R.actionSize - 20) / 2 },
+  action: { marginHorizontal: (A.size - 20) / 2, marginVertical: (A.size - 20) / 2 },
 });

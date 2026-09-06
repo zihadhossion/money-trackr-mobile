@@ -5,6 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { formStyles } from '../../theme/formStyles';
 import type { Income, Category } from '../../types';
 import { toISODate } from '../../utils/date';
@@ -19,6 +20,7 @@ interface IncomeFormProps {
 
 export default function IncomeForm({ initial, categories, onSubmit, onCancel, loading }: IncomeFormProps) {
   const { colors } = useTheme();
+  const { symbol } = useCurrency();
   const { t } = useTranslation();
   const fs = useMemo(() => formStyles(colors), [colors]);
 
@@ -51,7 +53,7 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
         {/* Amount */}
         <Text style={fs.label}>{t('common.amount_required')}</Text>
         <View style={fs.inputRow}>
-          <Text style={fs.currencySymbol}>৳</Text>
+          <Text style={fs.currencySymbol}>{symbol}</Text>
           <BottomSheetTextInput
             style={fs.amountInput}
             value={amount}

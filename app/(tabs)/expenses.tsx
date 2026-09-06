@@ -21,7 +21,7 @@ import ExpenseForm from '../../src/components/forms/ExpenseForm';
 import { expenseService } from '../../src/services/expenseService';
 import { categoryService } from '../../src/services/categoryService';
 import { getMonthDateRange } from '../../src/utils/date';
-import { formatCurrency } from '../../src/utils/currency';
+import { useCurrency } from '../../src/contexts/CurrencyContext';
 import { screenStyles } from '../../src/theme/screenStyles';
 import { getErrorMessage } from '../../src/utils/error';
 import type { Expense, Category } from '../../src/types';
@@ -30,6 +30,7 @@ import TransactionListSkeleton from '../../src/components/skeletons/TransactionL
 export default function ExpensesScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const { format } = useCurrency();
   const ss = useMemo(() => screenStyles(colors), [colors]);
   const s = useMemo(() => localStyles(colors), [colors]);
 
@@ -191,7 +192,7 @@ export default function ExpensesScreen() {
       >
         <View>
           <Text style={[ss.title, { color: colors.textPrimary }]}>{t('expenses.title')}</Text>
-          <Text style={[s.total, { color: colors.danger }]}>{formatCurrency(periodTotal)}</Text>
+          <Text style={[s.total, { color: colors.danger }]}>{format(periodTotal)}</Text>
         </View>
         <TouchableOpacity
           style={[ss.addBtn, { backgroundColor: colors.primary }]}

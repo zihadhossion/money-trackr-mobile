@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput,
-  Alert, RefreshControl, ActivityIndicator,
+  View, Text, FlatList, StyleSheet, TouchableOpacity, TextInput,
+  Alert, RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -10,12 +10,16 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { useBottomSheet } from '../src/hooks/useBottomSheet';
+import { usePagination } from '../src/hooks/usePagination';
 import NoteCard from '../src/components/ui/NoteCard';
 import NoteForm from '../src/components/forms/NoteForm';
 import EmptyState from '../src/components/ui/EmptyState';
+import ErrorState from '../src/components/ui/ErrorState';
+import PaginationFooter from '../src/components/ui/PaginationFooter';
 import NoteListSkeleton from '../src/components/skeletons/NoteListSkeleton';
 import { notesService } from '../src/services/notesService';
 import { screenStyles } from '../src/theme/screenStyles';
+import { TOUCH_TARGET } from '../src/theme/shapes';
 import type { Note, NotePayload } from '../src/types';
 import { getErrorMessage } from '../src/utils/error';
 
@@ -29,57 +33,41 @@ export default function NotesScreen() {
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const { sheetRef, snapPoints, editing, formKey, openAdd, openEdit, closeSheet } = useBottomSheet<Note>();
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(timer);
   }, [search]);
 
-  const fetchNotes = useCallback(async (targetPage: number, append: boolean) => {
-    try {
-      const result = await notesService.getAll({
+  const {
+    data: notes, loading, loadingMore, refreshing, error,
+    reloading, refresh, reload, retry, loadMore,
+  } = usePagination<Note>({
+    fetcher: useCallback(async (page, pageSize) => {
+      const { notes, totalPages } = await notesService.getAll({
         search: debouncedSearch || undefined,
-        page: targetPage,
-        limit: PAGE_SIZE,
+        page,
+        limit: pageSize,
       });
-      setNotes((prev) => (append ? [...prev, ...result.notes] : result.notes));
-      setPage(result.page);
-      setTotalPages(result.totalPages);
-    } catch (e) {
-      console.error('Notes fetch error:', e);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      setRefreshing(false);
-    }
-  }, [debouncedSearch]);
+      return { data: notes, totalPages };
+    }, [debouncedSearch]),
+    deps: [debouncedSearch],
+    pageSize: PAGE_SIZE,
+  });
 
-  // Re-runs on every search change, always resetting to the first page.
-  useEffect(() => {
-    setLoading(true);
-    fetchNotes(1, false);
-  }, [fetchNotes]);
+  const { sheetRef, snapPoints, editing, formKey, openAdd, openEdit, closeSheet } = useBottomSheet<Note>();
 
   const handleSubmit = async (data: NotePayload) => {
     setSaving(true);
     try {
       if (editing) {
-        const updated = await notesService.update(editing._id, data);
-        setNotes((prev) => prev.map((n) => (n._id === editing._id ? updated : n)));
+        await notesService.update(editing._id, data);
       } else {
-        const created = await notesService.create(data);
-        setNotes((prev) => [created, ...prev]);
+        await notesService.create(data);
       }
       closeSheet();
+      reload();
     } catch (e) {
       Alert.alert(t('common.error'), getErrorMessage(e));
     } finally {
@@ -87,28 +75,59 @@ export default function NotesScreen() {
     }
   };
 
-  const handleDelete = (note: Note) => {
+  const handleDelete = useCallback((note: Note) => {
     Alert.alert(t('notes.delete_title'), t('notes.delete_message', { title: note.title }), [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('common.delete'), style: 'destructive', onPress: async () => {
           try {
             await notesService.delete(note._id);
-            setNotes((prev) => prev.filter((n) => n._id !== note._id));
+            reload();
           } catch (e) {
             Alert.alert(t('common.error'), getErrorMessage(e));
           }
         },
       },
     ]);
-  };
+  }, [t, reload]);
+
+  const renderItem = useCallback(({ item }: { item: Note }) => (
+    <NoteCard
+      note={item}
+      onEdit={() => openEdit(item)}
+      onDelete={() => handleDelete(item)}
+    />
+  ), [openEdit, handleDelete]);
+
+  const listEmpty = loading ? (
+    <NoteListSkeleton />
+  ) : error ? (
+    <ErrorState message={error} onRetry={retry} />
+  ) : (
+    <EmptyState
+      icon="file-text"
+      title={debouncedSearch ? t('notes.empty_search') : t('notes.empty')}
+      subtitle={debouncedSearch ? t('notes.empty_search_subtitle') : t('notes.empty_subtitle')}
+      onAction={debouncedSearch ? undefined : openAdd}
+      actionLabel={debouncedSearch ? undefined : t('notes.add')}
+    />
+  );
+
+  // Rows already on screen: report the failure inline instead of replacing them.
+  // No footer while page 1 is in flight or the list is empty: there is no
+  // "end of list" to load past yet, and anything shown here would be a guess.
+  const listFooter = reloading || notes.length === 0 ? null : error ? (
+    <ErrorState compact message={error} onRetry={retry} />
+  ) : (
+    <PaginationFooter loadingMore={loadingMore} color={colors.primary} />
+  );
 
   return (
     <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
       <View style={[ss.header, { paddingBottom: 12 }]}>
-        <View style={s.headerLeft}>
+        <View style={ss.headerLeft}>
           <TouchableOpacity
-            style={s.backBtn}
+            style={ss.backBtn}
             onPress={() => router.back()}
             accessibilityRole="button"
             accessibilityLabel={t('a11y.back')}
@@ -150,57 +169,27 @@ export default function NotesScreen() {
         )}
       </View>
 
-      <ScrollView
+      <FlatList
+        data={notes}
+        keyExtractor={(item) => item._id}
+        renderItem={renderItem}
         contentContainerStyle={ss.scroll}
         keyboardShouldPersistTaps="handled"
         // No pull-to-refresh mid-load: it would fire a duplicate request on top
         // of the one already in flight. Scrolling stays enabled.
         refreshControl={
-          loading ? undefined : (
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => { setRefreshing(true); fetchNotes(1, false); }}
-              tintColor={colors.primary}
-            />
-          )
+          loading ? undefined
+            : <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.primary} />
         }
-      >
-        {loading ? (
-          <NoteListSkeleton />
-        ) : notes.length === 0 ? (
-          <EmptyState
-            icon="file-text"
-            title={debouncedSearch ? t('notes.empty_search') : t('notes.empty')}
-            subtitle={debouncedSearch ? t('notes.empty_search_subtitle') : t('notes.empty_subtitle')}
-            onAction={debouncedSearch ? undefined : openAdd}
-            actionLabel={debouncedSearch ? undefined : t('notes.add')}
-          />
-        ) : (
-          <>
-            {notes.map((note) => (
-              <NoteCard
-                key={note._id}
-                note={note}
-                onEdit={() => openEdit(note)}
-                onDelete={() => handleDelete(note)}
-              />
-            ))}
-            {page < totalPages && (
-              <TouchableOpacity
-                style={[s.loadMore, { borderColor: colors.borderColor }]}
-                onPress={() => { setLoadingMore(true); fetchNotes(page + 1, true); }}
-                disabled={loadingMore}
-              >
-                {loadingMore ? (
-                  <ActivityIndicator color={colors.primary} />
-                ) : (
-                  <Text style={[s.loadMoreText, { color: colors.primary }]}>{t('notes.load_more')}</Text>
-                )}
-              </TouchableOpacity>
-            )}
-          </>
-        )}
-      </ScrollView>
+        ListEmptyComponent={listEmpty}
+        ListFooterComponent={listFooter}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.4}
+        removeClippedSubviews
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={11}
+      />
 
       <BottomSheet
         ref={sheetRef}
@@ -228,11 +217,7 @@ export default function NotesScreen() {
 }
 
 const localStyles = StyleSheet.create({
-  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  backBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'flex-start' },
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginBottom: 8, paddingHorizontal: 12, borderRadius: 12, borderWidth: 1 },
-  clearBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
+  clearBtn: { width: TOUCH_TARGET, height: TOUCH_TARGET, justifyContent: 'center', alignItems: 'center' },
   searchInput: { flex: 1, paddingVertical: 10, fontSize: 14 },
-  loadMore: { borderWidth: 1, borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 6 },
-  loadMoreText: { fontSize: 14, fontWeight: '600' },
 });

@@ -12,6 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider } from '../src/contexts/ThemeContext';
 import { AuthProvider } from '../src/contexts/AuthContext';
 import { LanguageProvider } from '../src/contexts/LanguageContext';
+import { CurrencyProvider } from '../src/contexts/CurrencyContext';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { useAuth } from '../src/contexts/AuthContext';
 
@@ -61,7 +62,9 @@ export default function RootLayout() {
       <LanguageProvider>
         <ThemeProvider>
           <AuthProvider>
-            <InnerLayout />
+            <CurrencyProvider>
+              <InnerLayout />
+            </CurrencyProvider>
           </AuthProvider>
         </ThemeProvider>
       </LanguageProvider>

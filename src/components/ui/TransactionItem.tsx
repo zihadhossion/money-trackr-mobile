@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { formatDate, DATE_FNS_LOCALES } from '../../utils/date';
+import RowAction from './RowAction';
 import { TRANSACTION_ROW as R } from '../../theme/shapes';
 
 interface TransactionItemProps {
@@ -13,21 +14,21 @@ interface TransactionItemProps {
   amount: number;
   date: string;
   note?: string;
-  currency?: string;
   onEdit?: () => void;
   onDelete?: () => void;
   isIncome?: boolean;
 }
 
 export default React.memo(function TransactionItem({
-  icon, category, amount, date, note, currency = '৳', onEdit, onDelete, isIncome = false,
+  icon, category, amount, date, note, onEdit, onDelete, isIncome = false,
 }: TransactionItemProps) {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { language } = useLanguage();
+  const { format } = useCurrency();
 
   const formattedDate = formatDate(date, DATE_FNS_LOCALES[language]);
-  const formattedAmount = `${isIncome ? '+' : '-'}${currency}${amount.toLocaleString()}`;
+  const formattedAmount = `${isIncome ? '+' : '-'}${format(amount)}`;
 
   // One label for the whole row, so a screen reader reads it as a single
   // transaction instead of five disconnected fragments.
@@ -55,25 +56,21 @@ export default React.memo(function TransactionItem({
         </Text>
         <View style={styles.actions}>
           {onEdit && (
-            <TouchableOpacity
-              style={styles.actionBtn}
+            <RowAction
+              icon="edit-2"
+              color={colors.primary}
               onPress={onEdit}
-              accessibilityRole="button"
               accessibilityLabel={t('a11y.edit_transaction', { category })}
-            >
-              <Feather name="edit-2" size={16} color={colors.primary} />
-            </TouchableOpacity>
+            />
           )}
           {onDelete && (
-            <TouchableOpacity
-              style={styles.actionBtn}
+            <RowAction
+              icon="trash-2"
+              color={colors.danger}
               onPress={onDelete}
-              accessibilityRole="button"
               accessibilityLabel={t('a11y.delete_transaction', { category })}
               accessibilityHint={t('a11y.delete_hint')}
-            >
-              <Feather name="trash-2" size={16} color={colors.danger} />
-            </TouchableOpacity>
+            />
           )}
         </View>
       </View>
@@ -107,10 +104,4 @@ const styles = StyleSheet.create({
   right: { alignItems: 'flex-end', gap: 2 },
   amount: { fontSize: 15, fontWeight: '700' },
   actions: { flexDirection: 'row' },
-  actionBtn: {
-    width: R.actionSize,
-    height: R.actionSize,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
 });

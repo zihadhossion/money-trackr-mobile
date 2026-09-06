@@ -2,9 +2,9 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Skeleton from '../ui/Skeleton';
 import { useTheme } from '../../contexts/ThemeContext';
-import { LENDING_CARD as C } from '../../theme/shapes';
+import { LENDING_CARD as C, ROW_ACTION as A } from '../../theme/shapes';
 
-/** Mirrors LendingItem: header (36×36 icon + name/type, status badge), amount row, action buttons. */
+/** Mirrors LendingItem: header (36×36 icon + name/type, status badge), amount row, icon actions. */
 function LendingCardSkeleton() {
   const { colors } = useTheme();
   return (
@@ -30,8 +30,9 @@ function LendingCardSkeleton() {
         </View>
       </View>
       <View style={styles.actions}>
-        <Skeleton width={78} height={C.actionHeight} radius={8} />
-        <Skeleton width={78} height={C.actionHeight} radius={8} />
+        {Array.from({ length: 3 }, (_, i) => (
+          <Skeleton key={i} width={20} height={20} radius={4} style={styles.action} />
+        ))}
       </View>
     </View>
   );
@@ -53,5 +54,7 @@ const styles = StyleSheet.create({
   amountRow: { flexDirection: 'row', justifyContent: 'space-between' },
   amountCol: { gap: 4 },
   amountColRight: { alignItems: 'flex-end' },
-  actions: { flexDirection: 'row', gap: 8 },
+  actions: { flexDirection: 'row', justifyContent: 'flex-end' },
+  // Each block is centred in a full 44px slot, exactly like the real buttons.
+  action: { marginHorizontal: (A.size - 20) / 2, marginVertical: (A.size - 20) / 2 },
 });

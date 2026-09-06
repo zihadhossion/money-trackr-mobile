@@ -2,16 +2,17 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { PALETTE_COLORS } from '../../theme/colors';
 import type { CategoryData } from '../../types';
 
 interface ExpensePieChartProps {
   data: CategoryData[];
-  currency?: string;
 }
 
-export default React.memo(function ExpensePieChart({ data, currency = '৳' }: ExpensePieChartProps) {
+export default React.memo(function ExpensePieChart({ data }: ExpensePieChartProps) {
   const { colors } = useTheme();
+  const { format } = useCurrency();
 
   if (!data || data.length === 0) {
     return (
@@ -52,7 +53,7 @@ export default React.memo(function ExpensePieChart({ data, currency = '৳' }: E
             <View style={[styles.legendDot, { backgroundColor: PALETTE_COLORS[i % PALETTE_COLORS.length] }]} />
             <Text style={[styles.legendLabel, { color: colors.textSecondary }]} numberOfLines={1}>{item.category}</Text>
             <Text style={[styles.legendAmount, { color: colors.textPrimary }]}>
-              {currency}{item.total.toLocaleString()} ({item.percentage.toFixed(1)}%)
+              {format(item.total)} ({item.percentage.toFixed(1)}%)
             </Text>
           </View>
         ))}

@@ -21,6 +21,7 @@ import LendingForm from '../../src/components/forms/LendingForm';
 import RepaymentForm from '../../src/components/forms/RepaymentForm';
 import { lendingService } from '../../src/services/lendingService';
 import { getMonthDateRange } from '../../src/utils/date';
+import { useCurrency } from '../../src/contexts/CurrencyContext';
 import { screenStyles } from '../../src/theme/screenStyles';
 import type { Colors } from '../../src/theme/colors';
 import { getErrorMessage } from '../../src/utils/error';
@@ -49,8 +50,9 @@ const STATUS_FILTERS = [
 export default function LendingScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const { format } = useCurrency();
   const ss = useMemo(() => screenStyles(colors), [colors]);
-  const styles = useMemo(() => localStyles(colors), [colors]);
+  const s = useMemo(() => localStyles(colors), [colors]);
 
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
   const [year, setYear] = useState(() => new Date().getFullYear());
@@ -86,6 +88,9 @@ export default function LendingScreen() {
   useEffect(() => {
     refreshSummary();
   }, [refreshSummary, year, month]);
+
+  // Outstanding position: money still owed to you, less money you still owe.
+  const net = summary.totalLent - summary.totalBorrowed;
 
   const handleRefresh = useCallback(() => {
     refresh();
@@ -168,17 +173,17 @@ export default function LendingScreen() {
       <MonthYearPicker month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
 
       {/* Type Filter Chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
         {TYPE_FILTERS.map((f) => (
           <TouchableOpacity
             key={f.value}
-            style={[styles.chip, filterType === f.value && styles.chipActive]}
+            style={[s.chip, filterType === f.value && s.chipActive]}
             onPress={() => setFilterType(f.value)}
             accessibilityRole="button"
             accessibilityLabel={t(f.labelKey)}
             accessibilityState={{ selected: filterType === f.value }}
           >
-            <Text style={[styles.chipText, filterType === f.value && styles.chipTextActive]}>
+            <Text style={[s.chipText, filterType === f.value && s.chipTextActive]}>
               {t(f.labelKey)}
             </Text>
           </TouchableOpacity>
@@ -186,17 +191,17 @@ export default function LendingScreen() {
       </ScrollView>
 
       {/* Status Filter Chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
         {STATUS_FILTERS.map((f) => (
           <TouchableOpacity
             key={f.value}
-            style={[styles.chip, filterStatus === f.value && styles.chipActive]}
+            style={[s.chip, filterStatus === f.value && s.chipActive]}
             onPress={() => setFilterStatus(f.value)}
             accessibilityRole="button"
             accessibilityLabel={t(f.labelKey)}
             accessibilityState={{ selected: filterStatus === f.value }}
           >
-            <Text style={[styles.chipText, filterStatus === f.value && styles.chipTextActive]}>
+            <Text style={[s.chipText, filterStatus === f.value && s.chipTextActive]}>
               {t(f.labelKey)}
             </Text>
           </TouchableOpacity>
@@ -227,8 +232,20 @@ export default function LendingScreen() {
 
   return (
     <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
-      <View style={ss.header}>
-        <Text style={[ss.title, { color: colors.textPrimary }]}>{t('lending.title')}</Text>
+      <View style={[ss.header, { alignItems: 'flex-start' }]}>
+        <View>
+          <Text style={[ss.title, { color: colors.textPrimary }]}>{t('lending.title')}</Text>
+          {/* Net of what is still owed to you minus what you still owe, the
+              same slot expenses and income use for their period total. The
+              lending API has no per-period figure, so this one is all-time —
+              the two summary cards below it break the same number down. */}
+          <Text
+            style={[s.total, { color: net >= 0 ? colors.success : colors.danger }]}
+            accessibilityLabel={t('lending.net_a11y', { amount: format(Math.abs(net)) })}
+          >
+            {net >= 0 ? '' : '-'}{format(Math.abs(net))}
+          </Text>
+        </View>
         <TouchableOpacity
           style={[ss.addBtn, { backgroundColor: colors.primary }]}
           onPress={openAdd}
@@ -300,6 +317,7 @@ export default function LendingScreen() {
 }
 
 const localStyles = (colors: Colors) => StyleSheet.create({
+  total: { fontSize: 16, fontWeight: '600', marginTop: 2 },
   filterRow: { paddingHorizontal: 16, paddingBottom: 8, gap: 8 },
   chip: {
     paddingHorizontal: 16,

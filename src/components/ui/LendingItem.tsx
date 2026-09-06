@@ -1,13 +1,15 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { formatDate, DATE_FNS_LOCALES } from '../../utils/date';
 import type { Lending } from '../../types';
 import { LendingType } from '../../enums/lending-type.enum';
 import { LendingStatus } from '../../enums/lending-status.enum';
+import RowAction from './RowAction';
 import { LENDING_CARD as C } from '../../theme/shapes';
 
 interface LendingItemProps {
@@ -21,6 +23,7 @@ export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { language } = useLanguage();
+  const { format } = useCurrency();
   const isLent = item.type === LendingType.LENT;
 
   const statusColors: Record<LendingStatus, { bg: string; text: string }> = {
@@ -39,8 +42,8 @@ export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay
   const cardLabel = t('a11y.lending_item', {
     type: typeLabel,
     name: item.personName,
-    amount: `৳${item.amount.toLocaleString()}`,
-    remaining: `৳${item.remainingAmount.toLocaleString()}`,
+    amount: format(item.amount),
+    remaining: format(item.remainingAmount),
     status: statusLabel,
   });
 
@@ -65,12 +68,12 @@ export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay
         <View style={styles.amountRow}>
           <View>
             <Text style={[styles.amountLabel, { color: colors.textMuted }]}>{t('lending.amount')}</Text>
-            <Text style={[styles.amount, { color: colors.textPrimary }]}>{'৳'}{item.amount.toLocaleString()}</Text>
+            <Text style={[styles.amount, { color: colors.textPrimary }]}>{format(item.amount)}</Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={[styles.amountLabel, { color: colors.textMuted }]}>{t('lending.remaining')}</Text>
             <Text style={[styles.amount, { color: item.remainingAmount > 0 ? colors.warning : colors.success }]}>
-              {'৳'}{item.remainingAmount.toLocaleString()}
+              {format(item.remainingAmount)}
             </Text>
           </View>
         </View>
@@ -80,37 +83,30 @@ export default React.memo(function LendingItem({ item, onEdit, onDelete, onRepay
         )}
       </View>
 
+      {/* Repay is the only action that can disappear, so the row is anchored to
+          the right edge: edit and delete keep their position either way. */}
       <View style={styles.actions}>
         {item.status !== LendingStatus.PAID && (
-          <TouchableOpacity
-            style={[styles.btn, { backgroundColor: colors.successBg }]}
+          <RowAction
+            icon="check-circle"
+            color={colors.success}
             onPress={onRepay}
-            accessibilityRole="button"
             accessibilityLabel={t('a11y.repay_lending', { name: item.personName })}
-          >
-            <Feather name="check-circle" size={13} color={colors.success} />
-            <Text style={[styles.btnText, { color: colors.success }]}>{t('lending.repay')}</Text>
-          </TouchableOpacity>
+          />
         )}
-        <TouchableOpacity
-          style={[styles.btn, { backgroundColor: `${colors.primary}15` }]}
+        <RowAction
+          icon="edit-2"
+          color={colors.primary}
           onPress={onEdit}
-          accessibilityRole="button"
           accessibilityLabel={t('a11y.edit_lending', { name: item.personName })}
-        >
-          <Feather name="edit-2" size={13} color={colors.primary} />
-          <Text style={[styles.btnText, { color: colors.primary }]}>{t('common.edit')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.btn, { backgroundColor: colors.dangerBg }]}
+        />
+        <RowAction
+          icon="trash-2"
+          color={colors.danger}
           onPress={onDelete}
-          accessibilityRole="button"
           accessibilityLabel={t('a11y.delete_lending', { name: item.personName })}
           accessibilityHint={t('a11y.delete_hint')}
-        >
-          <Feather name="trash-2" size={13} color={colors.danger} />
-          <Text style={[styles.btnText, { color: colors.danger }]}>{t('common.delete')}</Text>
-        </TouchableOpacity>
+        />
       </View>
     </View>
   );
@@ -130,7 +126,5 @@ const styles = StyleSheet.create({
   amountLabel: { fontSize: 11, marginBottom: 2 },
   amount: { fontSize: 16, fontWeight: '700' },
   dueDate: { fontSize: 12 },
-  actions: { flexDirection: 'row', gap: 8 },
-  btn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, borderRadius: 8, paddingHorizontal: 12, minHeight: C.actionHeight },
-  btnText: { fontSize: 12, fontWeight: '600' },
+  actions: { flexDirection: 'row', justifyContent: 'flex-end' },
 });

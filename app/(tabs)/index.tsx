@@ -19,13 +19,14 @@ import { lendingService } from '../../src/services/lendingService';
 import { StatGridSkeleton, LendingSummarySkeleton, ChartSkeleton } from '../../src/components/skeletons/DashboardSkeleton';
 import ErrorState from '../../src/components/ui/ErrorState';
 import { getErrorMessage } from '../../src/utils/error';
-import { formatCurrency } from '../../src/utils/currency';
+import { useCurrency } from '../../src/contexts/CurrencyContext';
 import type { Overview, CategoryData, TrendData, LendingSummary } from '../../src/types';
 
 export default function DashboardScreen() {
   const { colors } = useTheme();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { format } = useCurrency();
   const s = useMemo(() => styles(colors), [colors]);
 
   const [currentYear] = useState(() => new Date().getFullYear());
@@ -58,7 +59,7 @@ export default function DashboardScreen() {
       setLendingSummary(ls);
       setError(null);
     } catch (e) {
-      // Without this the dashboard just renders ৳0.00 for a request that never
+      // Without this the dashboard just renders ৳0 for a request that never
       // succeeded — the same false-empty-state the list screens used to have.
       setError(getErrorMessage(e));
     } finally {
@@ -133,14 +134,14 @@ export default function DashboardScreen() {
         ) : (
           <View style={s.cardGrid}>
             <View style={s.cardRow}>
-              <StatCard title={t('dashboard.total_income')} value={formatCurrency(overview?.totalIncome ?? 0)} icon="trending-up" variant="success" />
+              <StatCard title={t('dashboard.total_income')} value={format(overview?.totalIncome ?? 0)} icon="trending-up" variant="success" />
               <View style={s.cardGap} />
-              <StatCard title={t('dashboard.total_expenses')} value={formatCurrency(overview?.totalExpenses ?? 0)} icon="trending-down" variant="danger" />
+              <StatCard title={t('dashboard.total_expenses')} value={format(overview?.totalExpenses ?? 0)} icon="trending-down" variant="danger" />
             </View>
             <View style={s.cardRow}>
-              <StatCard title={t('dashboard.balance')} value={formatCurrency(overview?.balance ?? 0)} icon="dollar-sign" variant="primary" />
+              <StatCard title={t('dashboard.balance')} value={format(overview?.balance ?? 0)} icon="dollar-sign" variant="primary" />
               <View style={s.cardGap} />
-              <StatCard title={t('dashboard.budget_used')} value={`${budgetPct.toFixed(1)}%`} icon="pie-chart" variant="warning" subtitle={t('dashboard.of_budget', { amount: formatCurrency(overview?.budgetLimit ?? 0) })} />
+              <StatCard title={t('dashboard.budget_used')} value={`${budgetPct.toFixed(1)}%`} icon="pie-chart" variant="warning" subtitle={t('dashboard.of_budget', { amount: format(overview?.budgetLimit ?? 0) })} />
             </View>
           </View>
         )}

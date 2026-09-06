@@ -1,23 +1,27 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   TextInput, Alert, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useLanguage } from '../../src/contexts/LanguageContext';
+import { useCurrency } from '../../src/contexts/CurrencyContext';
 import { settingsService } from '../../src/services/settingsService';
 import type { Settings } from '../../src/types';
 import { getErrorMessage } from '../../src/utils/error';
+import { getCurrencySymbol } from '../../src/utils/currency';
 
 export default function SettingsScreen() {
   const { colors, theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { language, setLanguage, supportedLanguages } = useLanguage();
+  const { setCurrency, supportedCurrencies } = useCurrency();
   const { t } = useTranslation();
   const s = useMemo(() => styles(colors), [colors]);
 
@@ -25,6 +29,15 @@ export default function SettingsScreen() {
   const [budget, setBudget] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const currencySheetRef = useRef<BottomSheet>(null);
+
+  const selectedCurrency = supportedCurrencies.find((c) => c.code === settings.currency);
+
+  const openCurrencySheet = useCallback(() => currencySheetRef.current?.expand(), []);
+  const pickCurrency = useCallback((code: string) => {
+    setSettings((prev) => ({ ...prev, currency: code }));
+    currencySheetRef.current?.close();
+  }, []);
 
   useEffect(() => {
     settingsService.get().then((data) => {
@@ -41,6 +54,8 @@ export default function SettingsScreen() {
         monthlyBudget: Number(budget) || 0,
       });
       setSettings(updated);
+      // Only after the API accepts it does every other screen switch over.
+      await setCurrency(updated.currency);
       Alert.alert(t('common.success'), t('settings.settings_saved'));
     } catch (e) {
       Alert.alert(t('common.error'), getErrorMessage(e, t('settings.failed_save')));
@@ -127,13 +142,23 @@ export default function SettingsScreen() {
           <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('settings.financial')}</Text>
 
           <Text style={[s.label, { color: colors.textSecondary }]}>{t('settings.currency')}</Text>
-          <View style={[s.currencyDisplay, { backgroundColor: colors.bgTertiary, borderColor: colors.borderColor }]}>
-            <Text style={[s.currencyText, { color: colors.textPrimary }]}>BDT (৳ Bangladeshi Taka)</Text>
-          </View>
+          <Text style={[s.hint, { color: colors.textMuted }]}>{t('settings.currency_hint')}</Text>
+          <TouchableOpacity
+            style={[s.select, { backgroundColor: colors.bgTertiary, borderColor: colors.borderColor }]}
+            onPress={openCurrencySheet}
+            accessibilityRole="button"
+            accessibilityLabel={selectedCurrency?.label ?? settings.currency}
+            accessibilityHint={t('settings.currency_hint')}
+          >
+            <Text style={[s.currencyText, { color: colors.textPrimary }]}>
+              {selectedCurrency ? `${selectedCurrency.symbol}  ${selectedCurrency.label}` : settings.currency}
+            </Text>
+            <Feather name="chevron-down" size={16} color={colors.textMuted} />
+          </TouchableOpacity>
 
           <Text style={[s.label, { color: colors.textSecondary }]}>{t('settings.monthly_budget')}</Text>
           <View style={[s.inputRow, { backgroundColor: colors.bgTertiary, borderColor: colors.borderColor }]}>
-            <Text style={[s.symbol, { color: colors.textMuted }]}>৳</Text>
+            <Text style={[s.symbol, { color: colors.textMuted }]}>{getCurrencySymbol(settings.currency)}</Text>
             <TextInput
               style={[s.input, { color: colors.textPrimary }]}
               value={budget}
@@ -187,6 +212,35 @@ export default function SettingsScreen() {
 
         <Text style={[s.version, { color: colors.textMuted }]}>{t('common.version')}</Text>
       </ScrollView>
+
+      <BottomSheet
+        ref={currencySheetRef}
+        index={-1}
+        enablePanDownToClose
+        backgroundStyle={{ backgroundColor: colors.bgPrimary }}
+        handleIndicatorStyle={{ backgroundColor: colors.borderColor }}
+      >
+        <BottomSheetView style={s.sheet}>
+          <Text style={[s.sheetTitle, { color: colors.textPrimary }]}>{t('settings.select_currency')}</Text>
+          {supportedCurrencies.map(({ code, symbol: sym, label }) => {
+            const selected = settings.currency === code;
+            return (
+              <TouchableOpacity
+                key={code}
+                style={[s.sheetRow, { backgroundColor: selected ? `${colors.primary}15` : 'transparent' }]}
+                onPress={() => pickCurrency(code)}
+                accessibilityRole="button"
+                accessibilityLabel={label}
+                accessibilityState={{ selected }}
+              >
+                <Text style={[s.currencySymbolBadge, { color: selected ? colors.primary : colors.textMuted }]}>{sym}</Text>
+                <Text style={[s.currencyText, { flex: 1, color: selected ? colors.primary : colors.textPrimary }]}>{label}</Text>
+                {selected && <Feather name="check" size={16} color={colors.primary} />}
+              </TouchableOpacity>
+            );
+          })}
+        </BottomSheetView>
+      </BottomSheet>
     </SafeAreaView>
   );
 }
@@ -205,7 +259,15 @@ const styles = (colors: any) => StyleSheet.create({
   themeBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, borderWidth: 1.5, padding: 12 },
   themeBtnText: { flex: 1, fontSize: 14, fontWeight: '600' },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 4 },
-  currencyDisplay: { borderRadius: 10, borderWidth: 1, padding: 12 },
+  hint: { fontSize: 12, marginTop: -8, marginBottom: 4 },
+  select: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderRadius: 10, padding: 12 },
+  // The sheet sizes itself to this view and the tab bar (60px, drawn by the
+  // navigator outside this screen) overlays its bottom edge, so the last row
+  // needs to clear both that and the gesture bar.
+  sheet: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 84, gap: 4 },
+  sheetTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
+  sheetRow: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 14 },
+  currencySymbolBadge: { fontSize: 16, fontWeight: '700', width: 20, textAlign: 'center' },
   currencyText: { fontSize: 14 },
   inputRow: { flexDirection: 'row', alignItems: 'center', borderRadius: 10, borderWidth: 1, paddingHorizontal: 12 },
   symbol: { fontSize: 18, marginRight: 8 },

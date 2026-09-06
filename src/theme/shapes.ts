@@ -9,6 +9,16 @@
 /** Minimum touch target: Apple HIG and WCAG 2.5.5 both ask for 44. */
 export const TOUCH_TARGET = 44;
 
+/**
+ * Every row-level edit/delete/repay button, on every card. One shape so a
+ * transaction row, a category tile, a lending card and a note all read as the
+ * same control instead of three sizes and two styles.
+ */
+export const ROW_ACTION = {
+  size: TOUCH_TARGET,
+  iconSize: 18,
+} as const;
+
 /** TransactionItem / TransactionListSkeleton */
 export const TRANSACTION_ROW = {
   padding: 12,
@@ -17,7 +27,6 @@ export const TRANSACTION_ROW = {
   marginBottom: 8,
   iconSize: 42,
   iconRadius: 12,
-  actionSize: TOUCH_TARGET,
 } as const;
 
 /** LendingItem / LendingListSkeleton */
@@ -28,7 +37,6 @@ export const LENDING_CARD = {
   marginBottom: 10,
   iconSize: 36,
   iconRadius: 10,
-  actionHeight: TOUCH_TARGET,
 } as const;
 
 /** StatCard / StatGridSkeleton */
@@ -64,7 +72,6 @@ export const CATEGORY_CARD = {
   minWidth: 90,
   iconSize: 50,
   iconRadius: 14,
-  actionSize: TOUCH_TARGET,
 } as const;
 
 /** NoteCard / NoteListSkeleton */

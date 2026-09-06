@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Category } from '../../types';
+import RowAction from './RowAction';
 import { CATEGORY_CARD as C } from '../../theme/shapes';
 
 interface CategoryCardProps {
@@ -28,25 +28,21 @@ export default React.memo(function CategoryCard({ category, onEdit, onDelete }: 
       {canEdit && (
         <View style={styles.actions}>
           {onEdit && (
-            <TouchableOpacity
-              style={styles.actionBtn}
+            <RowAction
+              icon="edit-2"
+              color={colors.primary}
               onPress={onEdit}
-              accessibilityRole="button"
               accessibilityLabel={t('a11y.edit_category', { name: category.name })}
-            >
-              <Feather name="edit-2" size={16} color={colors.primary} />
-            </TouchableOpacity>
+            />
           )}
           {onDelete && (
-            <TouchableOpacity
-              style={styles.actionBtn}
+            <RowAction
+              icon="trash-2"
+              color={colors.danger}
               onPress={onDelete}
-              accessibilityRole="button"
               accessibilityLabel={t('a11y.delete_category', { name: category.name })}
               accessibilityHint={t('a11y.delete_hint')}
-            >
-              <Feather name="trash-2" size={16} color={colors.danger} />
-            </TouchableOpacity>
+            />
           )}
         </View>
       )}
@@ -71,7 +67,6 @@ const styles = StyleSheet.create({
   },
   identity: { alignItems: 'center', gap: 8 },
   iconWrap: { width: C.iconSize, height: C.iconSize, borderRadius: C.iconRadius, justifyContent: 'center', alignItems: 'center' },
-  actionBtn: { width: C.actionSize, height: C.actionSize, justifyContent: 'center', alignItems: 'center' },
   icon: { fontSize: 24 },
   name: { fontSize: 13, fontWeight: '600', textAlign: 'center' },
   actions: { flexDirection: 'row' },

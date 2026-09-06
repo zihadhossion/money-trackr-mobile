@@ -20,7 +20,7 @@ import IncomeForm from '../../src/components/forms/IncomeForm';
 import { incomeService } from '../../src/services/incomeService';
 import { categoryService } from '../../src/services/categoryService';
 import { getMonthDateRange } from '../../src/utils/date';
-import { formatCurrency } from '../../src/utils/currency';
+import { useCurrency } from '../../src/contexts/CurrencyContext';
 import { screenStyles } from '../../src/theme/screenStyles';
 import { getErrorMessage } from '../../src/utils/error';
 import type { Income, Category } from '../../src/types';
@@ -29,6 +29,7 @@ import TransactionListSkeleton from '../../src/components/skeletons/TransactionL
 export default function IncomeScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const { format } = useCurrency();
   const ss = useMemo(() => screenStyles(colors), [colors]);
   const s = useMemo(() => localStyles(colors), [colors]);
 
@@ -135,7 +136,7 @@ export default function IncomeScreen() {
       <View style={[ss.header, { alignItems: 'flex-start' }]}>
         <View>
           <Text style={[ss.title, { color: colors.textPrimary }]}>{t('income.title')}</Text>
-          <Text style={[s.total, { color: colors.success }]}>{formatCurrency(periodTotal)}</Text>
+          <Text style={[s.total, { color: colors.success }]}>{format(periodTotal)}</Text>
         </View>
         <TouchableOpacity
           style={[ss.addBtn, { backgroundColor: colors.primary }]}

@@ -5,6 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { formStyles } from '../../theme/formStyles';
 import type { Expense, Category } from '../../types';
 import { toISODate } from '../../utils/date';
@@ -19,6 +20,7 @@ interface ExpenseFormProps {
 
 export default function ExpenseForm({ initial, categories, onSubmit, onCancel, loading }: ExpenseFormProps) {
   const { colors } = useTheme();
+  const { symbol } = useCurrency();
   const { t } = useTranslation();
   const fs = useMemo(() => formStyles(colors), [colors]);
   const s = useMemo(() => localStyles(colors), [colors]);
@@ -51,7 +53,7 @@ export default function ExpenseForm({ initial, categories, onSubmit, onCancel, l
 
         <Text style={fs.label}>{t('common.amount_required')}</Text>
         <View style={fs.inputRow}>
-          <Text style={fs.currencySymbol}>৳</Text>
+          <Text style={fs.currencySymbol}>{symbol}</Text>
           <BottomSheetTextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} />
         </View>
 
