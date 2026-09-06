@@ -9,9 +9,30 @@ export interface PaginatedExpenses {
   periodTotal: number;
 }
 
+// One object rather than six positional arguments: the screens now pass a
+// filter object straight through, and a new filter is a field, not a slot
+// every caller has to count past.
+export interface ExpenseQuery {
+  // Absent for the "all time" period, which filters by no date at all.
+  startDate?: string;
+  endDate?: string;
+  category?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
 export const expenseService = {
-  async getAll(startDate: string, endDate: string, category?: string, page = 1, limit = 15): Promise<PaginatedExpenses> {
-    const { data } = await api.get('/expenses', { params: { startDate, endDate, page, limit, ...(category ? { category } : {}) } });
+  async getAll({ startDate, endDate, category, search, page = 1, limit = 15 }: ExpenseQuery): Promise<PaginatedExpenses> {
+    const { data } = await api.get('/expenses', {
+      params: {
+        page, limit,
+        ...(startDate ? { startDate } : {}),
+        ...(endDate ? { endDate } : {}),
+        ...(category ? { category } : {}),
+        ...(search ? { search } : {}),
+      },
+    });
     return data;
   },
 

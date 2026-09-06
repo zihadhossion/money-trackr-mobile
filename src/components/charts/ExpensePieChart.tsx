@@ -2,16 +2,18 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { PALETTE_COLORS } from '../../theme/colors';
 import type { CategoryData } from '../../types';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface ExpensePieChartProps {
   data: CategoryData[];
-  currency?: string;
 }
 
-export default React.memo(function ExpensePieChart({ data, currency = '৳' }: ExpensePieChartProps) {
+export default React.memo(function ExpensePieChart({ data }: ExpensePieChartProps) {
   const { colors } = useTheme();
+  const { format } = useCurrency();
 
   if (!data || data.length === 0) {
     return (
@@ -33,8 +35,12 @@ export default React.memo(function ExpensePieChart({ data, currency = '৳' }: E
         <PieChart
           data={chartData}
           donut
-          innerRadius={55}
-          radius={80}
+          // Without innerCircleColor the donut hole defaults to white, which
+          // glares on the dark card. The wider ring keeps the % labels (drawn
+          // 'outward' by default for donuts) inside the band, not over the hole.
+          innerCircleColor={colors.bgPrimary}
+          innerRadius={48}
+          radius={85}
           showText
           textColor="#fff"
           textSize={11}
@@ -48,7 +54,7 @@ export default React.memo(function ExpensePieChart({ data, currency = '৳' }: E
             <View style={[styles.legendDot, { backgroundColor: PALETTE_COLORS[i % PALETTE_COLORS.length] }]} />
             <Text style={[styles.legendLabel, { color: colors.textSecondary }]} numberOfLines={1}>{item.category}</Text>
             <Text style={[styles.legendAmount, { color: colors.textPrimary }]}>
-              {currency}{item.total.toLocaleString()} ({item.percentage.toFixed(1)}%)
+              {format(item.total)} ({item.percentage.toFixed(1)}%)
             </Text>
           </View>
         ))}
@@ -63,8 +69,8 @@ const styles = StyleSheet.create({
   legend: { width: '100%', gap: 8 },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   legendDot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
-  legendLabel: { flex: 1, fontSize: 13 },
-  legendAmount: { fontSize: 13, fontWeight: '600' },
+  legendLabel: { flex: 1, fontSize: fontSize.meta },
+  legendAmount: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold },
   empty: { borderRadius: 12, padding: 24, alignItems: 'center' },
-  emptyText: { fontSize: 14 },
+  emptyText: { fontSize: fontSize.body },
 });

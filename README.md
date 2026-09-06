@@ -108,6 +108,10 @@ npm run web
 
 ## Building
 
+> Running on a physical device without EAS — plus the Expo Go, MIUI install, and
+> Google Sign-In signing pitfalls — is documented in
+> [docs/local-build.md](docs/local-build.md).
+
 ```bash
 # Build for Android
 eas build --platform android

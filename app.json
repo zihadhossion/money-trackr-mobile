@@ -8,13 +8,14 @@
     "userInterfaceStyle": "automatic",
     "scheme": "moneytrackr",
     "splash": {
-      "image": "./assets/splash-bg.png",
-      "backgroundColor": "#0F3D4A"
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#6366f1"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#6366f1",
-        "foregroundImage": "./assets/icon.png"
+        "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "package": "com.moneytrackr.mobile",
       "predictiveBackGestureEnabled": false
@@ -31,7 +32,14 @@
       "expo-secure-store",
       "@react-native-community/datetimepicker",
       "@react-native-google-signin/google-signin",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Money Trackr needs access to your photos so you can set a profile picture.",
+          "cameraPermission": "Money Trackr needs camera access so you can take a profile picture."
+        }
+      ]
     ],
     "extra": {
       "router": {},

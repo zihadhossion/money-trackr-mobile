@@ -5,6 +5,9 @@ import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../src/contexts/ThemeContext';
+import { screenStyles } from '../src/theme/screenStyles';
+import type { Colors } from '../src/theme/colors';
+import { fontSize, fontWeight, lineHeight } from '../src/theme/typography';
 
 type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
 
@@ -22,6 +25,12 @@ const SECTIONS: { icon: FeatherIconName; titleKey: string; descKey: string; tips
     tips: ['guide.dashboard_tip1', 'guide.dashboard_tip2'],
   },
   {
+    icon: 'search',
+    titleKey: 'guide.find_title',
+    descKey: 'guide.find_desc',
+    tips: ['guide.find_tip1', 'guide.find_tip2', 'guide.find_tip3', 'guide.find_tip4'],
+  },
+  {
     icon: 'trending-up',
     titleKey: 'guide.income_title',
     descKey: 'guide.income_desc',
@@ -37,7 +46,13 @@ const SECTIONS: { icon: FeatherIconName; titleKey: string; descKey: string; tips
     icon: 'repeat',
     titleKey: 'guide.lending_title',
     descKey: 'guide.lending_desc',
-    tips: ['guide.lending_tip1', 'guide.lending_tip2', 'guide.lending_tip3'],
+    tips: ['guide.lending_tip1', 'guide.lending_tip2', 'guide.lending_tip3', 'guide.lending_tip4'],
+  },
+  {
+    icon: 'file-text',
+    titleKey: 'guide.notes_title',
+    descKey: 'guide.notes_desc',
+    tips: ['guide.notes_tip1', 'guide.notes_tip2'],
   },
   {
     icon: 'grid',
@@ -56,16 +71,23 @@ const SECTIONS: { icon: FeatherIconName; titleKey: string; descKey: string; tips
 export default function GuideScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const ss = useMemo(() => screenStyles(colors), [colors]);
   const s = useMemo(() => styles(colors), [colors]);
 
   return (
-    <SafeAreaView style={[s.safe, { backgroundColor: colors.bgSecondary }]}>
-      <View style={[s.header, { backgroundColor: colors.bgSecondary }]}>
-        <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={22} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={[s.pageTitle, { color: colors.textPrimary }]}>{t('guide.title')}</Text>
-        <View style={s.backBtn} />
+    <SafeAreaView style={[ss.safe, { backgroundColor: colors.bgSecondary }]}>
+      <View style={[ss.header, { paddingBottom: 12 }]}>
+        <View style={ss.headerLeft}>
+          <TouchableOpacity
+            style={ss.backBtn}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.back')}
+          >
+            <Feather name="arrow-left" size={22} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={[ss.title, { color: colors.textPrimary }]}>{t('guide.title')}</Text>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={s.scroll}>
@@ -96,18 +118,14 @@ export default function GuideScreen() {
   );
 }
 
-const styles = (colors: any) => StyleSheet.create({
-  safe: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
-  backBtn: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
-  pageTitle: { flex: 1, fontSize: 18, fontWeight: '700', textAlign: 'center' },
+const styles = (colors: Colors) => StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 60, gap: 12 },
   card: { borderRadius: 16, padding: 16, borderWidth: 1, gap: 10 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   iconBox: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  sectionTitle: { fontSize: 16, fontWeight: '700' },
-  desc: { fontSize: 14, lineHeight: 20 },
+  sectionTitle: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold },
+  desc: { fontSize: fontSize.body, lineHeight: lineHeight.body },
   tipRow: { flexDirection: 'row', gap: 8 },
-  bullet: { fontSize: 16, lineHeight: 20, fontWeight: '700' },
-  tipText: { flex: 1, fontSize: 13, lineHeight: 20 },
+  bullet: { fontSize: fontSize.body, lineHeight: lineHeight.body, fontWeight: fontWeight.bold },
+  tipText: { flex: 1, fontSize: fontSize.meta, lineHeight: lineHeight.meta },
 });

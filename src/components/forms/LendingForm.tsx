@@ -1,24 +1,28 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { formStyles } from '../../theme/formStyles';
-import type { Lending } from '../../types';
+import type { Lending, LendingPayload } from '../../types';
 import { LendingType } from '../../enums/lending-type.enum';
 import { LendingStatus } from '../../enums/lending-status.enum';
 import { toISODate } from '../../utils/date';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface LendingFormProps {
   initial?: Partial<Lending>;
-  onSubmit: (data: Omit<Lending, '_id'>) => Promise<void>;
+  onSubmit: (data: LendingPayload) => Promise<void>;
   onCancel: () => void;
   loading?: boolean;
 }
 
 export default function LendingForm({ initial, onSubmit, onCancel, loading }: LendingFormProps) {
   const { colors } = useTheme();
+  const { symbol } = useCurrency();
   const { t } = useTranslation();
   const fs = useMemo(() => formStyles(colors), [colors]);
   const s = useMemo(() => localStyles(colors), [colors]);
@@ -38,9 +42,12 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
     if (!amount || isNaN(Number(amount))) return Alert.alert(t('common.validation'), t('validation.valid_amount'));
     if (!personName.trim()) return Alert.alert(t('common.validation'), t('validation.enter_person_name'));
     await onSubmit({
-      amount: Number(amount), personName, type, status,
+      amount: Number(amount), personName, type,
       date: toISODate(date), dueDate: dueDate ? toISODate(dueDate) : undefined,
-      notes, remainingAmount: Number(amount),
+      notes,
+      // CreateLendingDto rejects these (forbidNonWhitelisted), so send them only
+      // when editing — on create the server sets them itself.
+      ...(isEdit ? { status, remainingAmount: Number(amount) } : {}),
     });
   }
 
@@ -56,6 +63,9 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
             key={lType}
             style={[s.segmentBtn, type === lType && { backgroundColor: colors.primary }]}
             onPress={() => setType(lType)}
+            accessibilityRole="button"
+            accessibilityLabel={lType === LendingType.LENT ? t('lending.lent') : t('lending.borrowed')}
+            accessibilityState={{ selected: type === lType }}
           >
             <Text style={[s.segmentText, { color: type === lType ? '#fff' : colors.textSecondary }]}>{lType === LendingType.LENT ? t('lending.lent') : t('lending.borrowed')}</Text>
           </TouchableOpacity>
@@ -63,16 +73,21 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
       </View>
 
       <Text style={fs.label}>{t('common.person_name')}</Text>
-      <TextInput style={fs.input} value={personName} onChangeText={setPersonName} placeholder={t('common.person_name_placeholder')} placeholderTextColor={colors.textMuted} />
+      <BottomSheetTextInput style={fs.input} value={personName} onChangeText={setPersonName} placeholder={t('common.person_name_placeholder')} placeholderTextColor={colors.textMuted} accessibilityLabel={t('a11y.person_name_input')} />
 
       <Text style={fs.label}>{t('common.amount_required')}</Text>
       <View style={fs.inputRow}>
-        <Text style={fs.currencySymbol}>৳</Text>
-        <TextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} />
+        <Text style={fs.currencySymbol}>{symbol}</Text>
+        <BottomSheetTextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} accessibilityLabel={t('a11y.amount_input')} />
       </View>
 
       <Text style={fs.label}>{t('common.date')}</Text>
-      <TouchableOpacity style={fs.select} onPress={() => setShowDatePicker(true)}>
+      <TouchableOpacity
+        style={fs.select}
+        onPress={() => setShowDatePicker(true)}
+        accessibilityRole="button"
+        accessibilityLabel={`${t('common.date')}: ${toISODate(date)}`}
+      >
         <Text style={[fs.selectText, { color: colors.textPrimary }]}>{toISODate(date)}</Text>
         <Feather name="calendar" size={16} color={colors.textMuted} />
       </TouchableOpacity>
@@ -81,7 +96,12 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
       )}
 
       <Text style={fs.label}>{t('common.due_date')}</Text>
-      <TouchableOpacity style={fs.select} onPress={() => setShowDueDatePicker(true)}>
+      <TouchableOpacity
+        style={fs.select}
+        onPress={() => setShowDueDatePicker(true)}
+        accessibilityRole="button"
+        accessibilityLabel={`${t('common.due_date')}: ${dueDate ? toISODate(dueDate) : t('common.no_due_date')}`}
+      >
         <Text style={[fs.selectText, { color: dueDate ? colors.textPrimary : colors.textMuted }]}>{dueDate ? toISODate(dueDate) : t('common.no_due_date')}</Text>
         <Feather name="calendar" size={16} color={colors.textMuted} />
       </TouchableOpacity>
@@ -104,6 +124,9 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
                   key={st}
                   style={[s.statusBtn, status === st && { backgroundColor: colors.primary }]}
                   onPress={() => setStatus(st)}
+                  accessibilityRole="button"
+                  accessibilityLabel={statusLabels[st]}
+                  accessibilityState={{ selected: status === st }}
                 >
                   <Text style={[s.statusText, { color: status === st ? '#fff' : colors.textSecondary }]}>{statusLabels[st]}</Text>
                 </TouchableOpacity>
@@ -114,11 +137,18 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
       )}
 
       <Text style={fs.label}>{t('common.notes')}</Text>
-      <TextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} />
+      <BottomSheetTextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} accessibilityLabel={t('a11y.notes_input')} />
 
       <View style={fs.buttons}>
-        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
-        <TouchableOpacity style={[fs.submitBtn, { backgroundColor: colors.primary }]} onPress={handleSubmit} disabled={loading}>
+        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
+        <TouchableOpacity
+          style={[fs.submitBtn, { backgroundColor: colors.primary }]}
+          onPress={handleSubmit}
+          disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.save')}
+          accessibilityState={{ disabled: loading, busy: loading }}
+        >
           <Text style={fs.submitText}>{loading ? t('common.saving') : t('common.save')}</Text>
         </TouchableOpacity>
       </View>
@@ -129,8 +159,8 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
 const localStyles = (colors: any) => StyleSheet.create({
   segmented: { flexDirection: 'row', borderRadius: 10, borderWidth: 1, borderColor: colors.borderColor, overflow: 'hidden' },
   segmentBtn: { flex: 1, padding: 10, alignItems: 'center' },
-  segmentText: { fontSize: 14, fontWeight: '600' },
+  segmentText: { fontSize: fontSize.body, fontWeight: fontWeight.semibold },
   statusRow: { flexDirection: 'row', gap: 8 },
   statusBtn: { flex: 1, borderRadius: 8, borderWidth: 1, borderColor: colors.borderColor, padding: 8, alignItems: 'center' },
-  statusText: { fontSize: 12, fontWeight: '600' },
+  statusText: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold },
 });

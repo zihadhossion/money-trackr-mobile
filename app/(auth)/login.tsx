@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLanguage } from '../../src/contexts/LanguageContext';
+import { fontSize, fontWeight, lineHeight } from '../../src/theme/typography';
 
 export default function LoginScreen() {
   const { signIn, isAuthenticated, loading, error } = useAuth();
@@ -24,7 +25,7 @@ export default function LoginScreen() {
     <View style={s.container}>
       <View style={s.hero}>
         <View style={s.logoContainer}>
-          <Feather name="trending-up" size={40} color={colors.primary} />
+          <Feather name="trending-up" size={40} color={colors.primary} accessibilityElementsHidden importantForAccessibility="no" />
         </View>
         <Text style={s.appName}>{t('auth.app_name')}</Text>
         <Text style={s.tagline}>{t('auth.tagline')}</Text>
@@ -37,7 +38,7 @@ export default function LoginScreen() {
             { icon: 'bell', text: t('auth.feature_budget') },
           ].map(({ icon, text }) => (
             <View key={text} style={s.featureRow}>
-              <View style={s.featureIcon}>
+              <View style={s.featureIcon} accessibilityElementsHidden importantForAccessibility="no">
                 <Feather name={icon as any} size={16} color={colors.primary} />
               </View>
               <Text style={s.featureText}>{text}</Text>
@@ -55,6 +56,9 @@ export default function LoginScreen() {
           onPress={signIn}
           disabled={loading}
           activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={loading ? t('a11y.signing_in') : t('auth.continue_google')}
+          accessibilityState={{ disabled: loading, busy: loading }}
         >
           {loading ? (
             <ActivityIndicator size="small" color={colors.textPrimary} />
@@ -74,6 +78,9 @@ export default function LoginScreen() {
               key={code}
               style={[s.langBtn, { borderColor: language === code ? colors.primary : colors.borderColor, backgroundColor: language === code ? `${colors.primary}15` : colors.bgTertiary }]}
               onPress={() => setLanguage(code)}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.language_option', { name: label })}
+              accessibilityState={{ selected: language === code }}
             >
               <Text style={[s.langBtnText, { color: language === code ? colors.primary : colors.textMuted }]}>{label}</Text>
               {language === code && <Feather name="check" size={13} color={colors.primary} />}
@@ -81,7 +88,13 @@ export default function LoginScreen() {
           ))}
         </View>
 
-        <TouchableOpacity style={s.guideLinkRow} onPress={() => router.push('/guide')}>
+        <TouchableOpacity
+          style={s.guideLinkRow}
+          onPress={() => router.push('/guide')}
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.usage_guide')}
+          accessibilityHint={t('settings.usage_guide_subtitle')}
+        >
           <Feather name="book-open" size={15} color={colors.primary} />
           <Text style={[s.guideLinkText, { color: colors.primary }]}>{t('settings.usage_guide')}</Text>
           <Feather name="chevron-right" size={15} color={colors.primary} />
@@ -120,13 +133,13 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       elevation: 4,
     },
     appName: {
-      fontSize: 28,
-      fontWeight: '700',
+      fontSize: fontSize.display,
+      fontWeight: fontWeight.bold,
       color: colors.textPrimary,
       marginBottom: 6,
     },
     tagline: {
-      fontSize: 15,
+      fontSize: fontSize.body,
       color: colors.textMuted,
       marginBottom: 32,
       textAlign: 'center',
@@ -149,9 +162,9 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       alignItems: 'center',
     },
     featureText: {
-      fontSize: 15,
+      fontSize: fontSize.body,
       color: colors.textSecondary,
-      fontWeight: '500',
+      fontWeight: fontWeight.medium,
     },
     card: {
       backgroundColor: colors.bgPrimary,
@@ -164,13 +177,13 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       elevation: 4,
     },
     welcomeTitle: {
-      fontSize: 22,
-      fontWeight: '700',
+      fontSize: fontSize.title,
+      fontWeight: fontWeight.bold,
       color: colors.textPrimary,
       marginBottom: 6,
     },
     welcomeSubtitle: {
-      fontSize: 14,
+      fontSize: fontSize.body,
       color: colors.textMuted,
       marginBottom: 24,
     },
@@ -188,20 +201,20 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       marginBottom: 16,
     },
     googleIcon: {
-      fontSize: 18,
-      fontWeight: '700',
+      fontSize: fontSize.emphasis,
+      fontWeight: fontWeight.bold,
       color: colors.primary,
     },
     googleButtonText: {
-      fontSize: 16,
-      fontWeight: '600',
+      fontSize: fontSize.emphasis,
+      fontWeight: fontWeight.semibold,
       color: colors.textPrimary,
     },
     terms: {
-      fontSize: 12,
+      fontSize: fontSize.meta,
       color: colors.textMuted,
       textAlign: 'center',
-      lineHeight: 18,
+      lineHeight: lineHeight.meta,
     },
     langRow: {
       flexDirection: 'row',
@@ -219,8 +232,8 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       paddingVertical: 10,
     },
     langBtnText: {
-      fontSize: 13,
-      fontWeight: '600',
+      fontSize: fontSize.meta,
+      fontWeight: fontWeight.semibold,
     },
     guideLinkRow: {
       flexDirection: 'row',
@@ -230,7 +243,7 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       marginTop: 14,
     },
     guideLinkText: {
-      fontSize: 13,
-      fontWeight: '600',
+      fontSize: fontSize.meta,
+      fontWeight: fontWeight.semibold,
     },
   });
