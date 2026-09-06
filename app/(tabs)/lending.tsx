@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
-  View, Text, ScrollView, FlatList, StyleSheet, TouchableOpacity,
+  View, Text, FlatList, StyleSheet, TouchableOpacity,
   Alert, RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,7 +11,14 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { useBottomSheet } from '../../src/hooks/useBottomSheet';
 import { usePagination } from '../../src/hooks/usePagination';
 import { useRefreshOnFocus } from '../../src/hooks/useRefreshOnFocus';
-import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
+import { useSheetDismiss } from '../../src/hooks/useSheetDismiss';
+import { useListFilters, periodRange, usePeriodChip } from '../../src/hooks/useListFilters';
+import { useResultCount } from '../../src/hooks/useResultCount';
+import ListToolbar from '../../src/components/ui/ListToolbar';
+import ActiveFilterChips, { type ActiveFilter } from '../../src/components/ui/ActiveFilterChips';
+import FilterSheet, { FilterSection } from '../../src/components/ui/FilterSheet';
+import PeriodPicker from '../../src/components/ui/PeriodPicker';
+import SegmentedControl from '../../src/components/ui/SegmentedControl';
 import LendingItem from '../../src/components/ui/LendingItem';
 import LendingSummaryCards from '../../src/components/ui/LendingSummaryCards';
 import EmptyState from '../../src/components/ui/EmptyState';
@@ -20,7 +27,6 @@ import PaginationFooter from '../../src/components/ui/PaginationFooter';
 import LendingForm from '../../src/components/forms/LendingForm';
 import RepaymentForm from '../../src/components/forms/RepaymentForm';
 import { lendingService } from '../../src/services/lendingService';
-import { getMonthDateRange } from '../../src/utils/date';
 import { useCurrency } from '../../src/contexts/CurrencyContext';
 import { screenStyles } from '../../src/theme/screenStyles';
 import type { Colors } from '../../src/theme/colors';
@@ -33,7 +39,7 @@ type FilterType = '' | 'LENT' | 'BORROWED';
 type FilterStatus = '' | 'PENDING' | 'PARTIAL' | 'PAID';
 
 // Labels are translation keys, resolved at render time so a language switch
-// re-labels the chips instead of leaving them in English.
+// re-labels the options instead of leaving them in English.
 const TYPE_FILTERS = [
   { labelKey: 'lending.filters.all', value: '' },
   { labelKey: 'lending.filters.lent', value: 'LENT' },
@@ -47,6 +53,8 @@ const STATUS_FILTERS = [
   { labelKey: 'lending.filters.paid', value: 'PAID' },
 ] as const satisfies readonly { labelKey: string; value: FilterStatus }[];
 
+const NO_EXTRA_FILTERS = { filterType: '' as FilterType, filterStatus: '' as FilterStatus };
+
 export default function LendingScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -54,29 +62,33 @@ export default function LendingScreen() {
   const ss = useMemo(() => screenStyles(colors), [colors]);
   const s = useMemo(() => localStyles(colors), [colors]);
 
-  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
-  const [year, setYear] = useState(() => new Date().getFullYear());
   const [summary, setSummary] = useState<LendingSummary>({ totalLent: 0, totalBorrowed: 0 });
   const [saving, setSaving] = useState(false);
   const [repaying, setRepaying] = useState<Lending | null>(null);
   const [sheetMode, setSheetMode] = useState<SheetMode>(null);
-  const [filterType, setFilterType] = useState<FilterType>('');
-  const [filterStatus, setFilterStatus] = useState<FilterStatus>('');
+  const filterSheetRef = useRef<BottomSheet>(null);
+
+  const {
+    applied, draft, setDraft, search, setSearch, debouncedSearch,
+    sheetOpen, openSheet, closeSheet: closeFilterSheet, apply, resetDraft, set, clearAll,
+  } = useListFilters(NO_EXTRA_FILTERS);
 
   const {
     data: lendings, loading, loadingMore, refreshing, error,
     reloading, refresh, reload, retry, loadMore,
   } = usePagination<Lending>({
     fetcher: useCallback(async (page, pageSize) => {
-      const { startDate, endDate } = getMonthDateRange(year, month);
-      const { lendings, totalPages } = await lendingService.getAll(
-        startDate, endDate, page, pageSize,
-        filterType || undefined,
-        filterStatus || undefined,
-      );
+      const { lendings, totalPages } = await lendingService.getAll({
+        ...periodRange(applied),
+        type: applied.filterType || undefined,
+        status: applied.filterStatus || undefined,
+        search: debouncedSearch || undefined,
+        page,
+        limit: pageSize,
+      });
       return { data: lendings, totalPages };
-    }, [year, month, filterType, filterStatus]),
-    deps: [year, month, filterType, filterStatus],
+    }, [applied, debouncedSearch]),
+    deps: [applied, debouncedSearch],
   });
 
   const refreshSummary = useCallback(() => {
@@ -87,7 +99,7 @@ export default function LendingScreen() {
 
   useEffect(() => {
     refreshSummary();
-  }, [refreshSummary, year, month]);
+  }, [refreshSummary, applied]);
 
   // Outstanding position: money still owed to you, less money you still owe.
   const net = summary.totalLent - summary.totalBorrowed;
@@ -105,12 +117,31 @@ export default function LendingScreen() {
   // Tab screens stay mounted, so pull fresh data whenever this one is focused.
   useRefreshOnFocus(handleReload);
 
-  const { sheetRef, snapPoints, editing, formKey, openAdd: baseOpenAdd, openEdit: baseOpenEdit, closeSheet: baseCloseSheet } = useBottomSheet<Lending>();
+  const { sheetRef, snapPoints, editing, formKey, isOpen: formOpen, openAdd: baseOpenAdd, openEdit: baseOpenEdit, closeSheet: baseCloseSheet, handleSheetChange } = useBottomSheet<Lending>();
+
+  const draftCount = useResultCount(
+    useCallback(async () => {
+      const { total } = await lendingService.getAll({
+        ...periodRange(draft),
+        type: draft.filterType || undefined,
+        status: draft.filterStatus || undefined,
+        search: debouncedSearch || undefined,
+        limit: 1,
+      });
+      return total;
+    }, [draft, debouncedSearch]),
+    sheetOpen,
+  );
 
   const openAdd = () => { baseOpenAdd(); setSheetMode('form'); };
   const openEdit = (item: Lending) => { baseOpenEdit(item); setSheetMode('form'); };
   const openRepay = (item: Lending) => { baseOpenAdd(); setRepaying(item); setSheetMode('repayment'); };
   const closeSheet = () => { baseCloseSheet(); setRepaying(null); setSheetMode(null); };
+
+  useSheetDismiss([
+    { ref: filterSheetRef, open: sheetOpen, onClose: closeFilterSheet },
+    { ref: sheetRef, open: formOpen, onClose: closeSheet },
+  ]);
 
   const handleSubmit = async (data: LendingPayload) => {
     setSaving(true);
@@ -168,55 +199,72 @@ export default function LendingScreen() {
     />
   ), [openEdit, handleDelete, openRepay]);
 
+  // Both dimensions are bare words — "Lent" and "Pending" sit side by side
+  // with nothing to say which is which — so these chips carry their label.
+  const periodChip = usePeriodChip(applied, set);
+  const activeFilters = useMemo<ActiveFilter[]>(() => {
+    const out: ActiveFilter[] = [];
+    if (periodChip) out.push(periodChip);
+    if (applied.filterType) {
+      const opt = TYPE_FILTERS.find((f) => f.value === applied.filterType);
+      out.push({
+        key: 'type',
+        label: t('filters.type'),
+        value: t(opt!.labelKey as any),
+        onRemove: () => set({ filterType: '' }),
+      });
+    }
+    if (applied.filterStatus) {
+      const opt = STATUS_FILTERS.find((f) => f.value === applied.filterStatus);
+      out.push({
+        key: 'status',
+        label: t('filters.status'),
+        value: t(opt!.labelKey as any),
+        onRemove: () => set({ filterStatus: '' }),
+      });
+    }
+    return out;
+  }, [periodChip, applied.filterType, applied.filterStatus, set, t]);
+
+  const typeOptions = useMemo(
+    () => TYPE_FILTERS.map((f) => ({ value: f.value as FilterType, label: t(f.labelKey as any) })),
+    [t],
+  );
+  const statusOptions = useMemo(
+    () => STATUS_FILTERS.map((f) => ({ value: f.value as FilterStatus, label: t(f.labelKey as any) })),
+    [t],
+  );
+
   const listHeader = (
     <>
-      <MonthYearPicker month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        placeholder={t('filters.search_debts')}
+        activeCount={activeFilters.length}
+        onOpenFilters={() => { filterSheetRef.current?.expand(); openSheet(); }}
+      />
+      <ActiveFilterChips filters={activeFilters} onClearAll={clearAll} />
 
-      {/* Type Filter Chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
-        {TYPE_FILTERS.map((f) => (
-          <TouchableOpacity
-            key={f.value}
-            style={[s.chip, filterType === f.value && s.chipActive]}
-            onPress={() => setFilterType(f.value)}
-            accessibilityRole="button"
-            accessibilityLabel={t(f.labelKey)}
-            accessibilityState={{ selected: filterType === f.value }}
-          >
-            <Text style={[s.chipText, filterType === f.value && s.chipTextActive]}>
-              {t(f.labelKey)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Status Filter Chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
-        {STATUS_FILTERS.map((f) => (
-          <TouchableOpacity
-            key={f.value}
-            style={[s.chip, filterStatus === f.value && s.chipActive]}
-            onPress={() => setFilterStatus(f.value)}
-            accessibilityRole="button"
-            accessibilityLabel={t(f.labelKey)}
-            accessibilityState={{ selected: filterStatus === f.value }}
-          >
-            <Text style={[s.chipText, filterStatus === f.value && s.chipTextActive]}>
-              {t(f.labelKey)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Summary cards */}
+      {/* Summary cards are figures, not controls, so they stay on the screen. */}
       <LendingSummaryCards summary={summary} />
     </>
   );
+
+  const isFiltered = activeFilters.length > 0 || debouncedSearch.length > 0;
 
   const listEmpty = loading ? (
     <LendingListSkeleton />
   ) : error ? (
     <ErrorState message={error} onRetry={retry} />
+  ) : isFiltered ? (
+    <EmptyState
+      icon="filter"
+      title={t('filters.empty_filtered_title')}
+      subtitle={t('filters.empty_filtered_subtitle')}
+      onAction={clearAll}
+      actionLabel={t('filters.clear_filters')}
+    />
   ) : (
     <EmptyState icon="repeat" title={t('lending.empty_title')} subtitle={t('lending.empty_subtitle')} onAction={openAdd} actionLabel={t('lending.add_record')} />
   );
@@ -262,6 +310,7 @@ export default function LendingScreen() {
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
         contentContainerStyle={ss.scroll}
+        keyboardShouldPersistTaps="handled"
         // No pull-to-refresh mid-load: it would fire a duplicate request on top
         // of the one already in flight. Scrolling stays enabled.
         refreshControl={
@@ -279,11 +328,38 @@ export default function LendingScreen() {
         windowSize={11}
       />
 
+      <FilterSheet
+        ref={filterSheetRef}
+        onReset={resetDraft}
+        onApply={() => { apply(); filterSheetRef.current?.close(); }}
+        onClose={closeFilterSheet}
+        resultCount={draftCount}
+      >
+        <FilterSection title={t('filters.period')}>
+          <PeriodPicker value={draft} onChange={(next) => setDraft((d) => ({ ...d, ...next }))} />
+        </FilterSection>
+        <FilterSection title={t('filters.type')}>
+          <SegmentedControl
+            options={typeOptions}
+            value={draft.filterType}
+            onChange={(filterType) => setDraft((d) => ({ ...d, filterType }))}
+          />
+        </FilterSection>
+        <FilterSection title={t('filters.status')}>
+          <SegmentedControl
+            options={statusOptions}
+            value={draft.filterStatus}
+            onChange={(filterStatus) => setDraft((d) => ({ ...d, filterStatus }))}
+          />
+        </FilterSection>
+      </FilterSheet>
+
       <BottomSheet
         ref={sheetRef}
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose
+        onChange={handleSheetChange}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
@@ -318,24 +394,4 @@ export default function LendingScreen() {
 
 const localStyles = (colors: Colors) => StyleSheet.create({
   total: { fontSize: 16, fontWeight: '600', marginTop: 2 },
-  filterRow: { paddingHorizontal: 16, paddingBottom: 8, gap: 8 },
-  chip: {
-    paddingHorizontal: 16,
-    minHeight: 44,
-    justifyContent: 'center',
-    borderRadius: 22,
-    backgroundColor: colors.bgTertiary,
-  },
-  chipActive: {
-    backgroundColor: colors.primary,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '600',
-    // textMuted fails AA on the light chip surface at 13px; textSecondary passes in both themes.
-    color: colors.textSecondary,
-  },
-  chipTextActive: {
-    color: colors.white,
-  },
 });

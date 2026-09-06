@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View, Text, FlatList, StyleSheet, TouchableOpacity,
   Alert, RefreshControl,
@@ -6,12 +6,21 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import type { Colors } from '../../src/theme/colors';
 import { useBottomSheet } from '../../src/hooks/useBottomSheet';
 import { usePagination } from '../../src/hooks/usePagination';
 import { useRefreshOnFocus } from '../../src/hooks/useRefreshOnFocus';
-import MonthYearPicker from '../../src/components/ui/MonthYearPicker';
+import { useSheetDismiss } from '../../src/hooks/useSheetDismiss';
+import { useListFilters, periodRange, usePeriodChip } from '../../src/hooks/useListFilters';
+import { useResultCount } from '../../src/hooks/useResultCount';
+import ListToolbar from '../../src/components/ui/ListToolbar';
+import ActiveFilterChips, { type ActiveFilter } from '../../src/components/ui/ActiveFilterChips';
+import FilterSheet, { FilterSection } from '../../src/components/ui/FilterSheet';
+import PeriodPicker from '../../src/components/ui/PeriodPicker';
+import CategorySelect from '../../src/components/ui/CategorySelect';
 import TransactionItem from '../../src/components/ui/TransactionItem';
 import EmptyState from '../../src/components/ui/EmptyState';
 import ErrorState from '../../src/components/ui/ErrorState';
@@ -19,12 +28,13 @@ import PaginationFooter from '../../src/components/ui/PaginationFooter';
 import IncomeForm from '../../src/components/forms/IncomeForm';
 import { incomeService } from '../../src/services/incomeService';
 import { categoryService } from '../../src/services/categoryService';
-import { getMonthDateRange } from '../../src/utils/date';
 import { useCurrency } from '../../src/contexts/CurrencyContext';
 import { screenStyles } from '../../src/theme/screenStyles';
 import { getErrorMessage } from '../../src/utils/error';
 import type { Income, Category } from '../../src/types';
 import TransactionListSkeleton from '../../src/components/skeletons/TransactionListSkeleton';
+
+const NO_EXTRA_FILTERS = { category: '' };
 
 export default function IncomeScreen() {
   const { colors } = useTheme();
@@ -33,21 +43,30 @@ export default function IncomeScreen() {
   const ss = useMemo(() => screenStyles(colors), [colors]);
   const s = useMemo(() => localStyles(colors), [colors]);
 
-  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
-  const [year, setYear] = useState(() => new Date().getFullYear());
   const [categories, setCategories] = useState<Category[]>([]);
   const [saving, setSaving] = useState(false);
+  const filterSheetRef = useRef<BottomSheet>(null);
+
+  const {
+    applied, draft, setDraft, search, setSearch, debouncedSearch,
+    sheetOpen, openSheet, closeSheet, apply, resetDraft, set, clearAll,
+  } = useListFilters(NO_EXTRA_FILTERS);
 
   const {
     data: incomes, meta, loading, loadingMore, refreshing, error,
     reloading, refresh, reload, retry, loadMore,
   } = usePagination<Income, { periodTotal: number }>({
     fetcher: useCallback(async (page, pageSize) => {
-      const { startDate, endDate } = getMonthDateRange(year, month);
-      const { incomes, totalPages, periodTotal } = await incomeService.getAll(startDate, endDate, page, pageSize);
+      const { incomes, totalPages, periodTotal } = await incomeService.getAll({
+        ...periodRange(applied),
+        category: applied.category || undefined,
+        search: debouncedSearch || undefined,
+        page,
+        limit: pageSize,
+      });
       return { data: incomes, totalPages, meta: { periodTotal } };
-    }, [year, month]),
-    deps: [year, month],
+    }, [applied, debouncedSearch]),
+    deps: [applied, debouncedSearch],
   });
 
   const loadCategories = useCallback(() => {
@@ -61,9 +80,27 @@ export default function IncomeScreen() {
   // Tab screens stay mounted, so pull fresh data whenever this one is focused.
   useRefreshOnFocus(useCallback(() => { reload(); loadCategories(); }, [reload, loadCategories]));
 
-  const { sheetRef, snapPoints, editing, formKey, openAdd, openEdit, closeSheet } = useBottomSheet<Income>();
+  const { sheetRef, snapPoints, editing, formKey, isOpen: formOpen, openAdd, openEdit, closeSheet: closeForm, handleSheetChange } = useBottomSheet<Income>();
+
+  useSheetDismiss([
+    { ref: filterSheetRef, open: sheetOpen, onClose: closeSheet },
+    { ref: sheetRef, open: formOpen, onClose: closeForm },
+  ]);
 
   const periodTotal = meta?.periodTotal ?? 0;
+
+  const draftCount = useResultCount(
+    useCallback(async () => {
+      const { total } = await incomeService.getAll({
+        ...periodRange(draft),
+        category: draft.category || undefined,
+        search: debouncedSearch || undefined,
+        limit: 1,
+      });
+      return total;
+    }, [draft, debouncedSearch]),
+    sheetOpen,
+  );
 
   const handleSubmit = async (data: Omit<Income, '_id'>) => {
     setSaving(true);
@@ -73,7 +110,7 @@ export default function IncomeScreen() {
       } else {
         await incomeService.create(data);
       }
-      closeSheet();
+      closeForm();
       reload();
     } catch (e) {
       Alert.alert(t('common.error'), getErrorMessage(e));
@@ -114,10 +151,47 @@ export default function IncomeScreen() {
     />
   ), [getCategoryIcon, openEdit, handleDelete]);
 
+  // Filters the user actually chose. The current month is the default, so it
+  // is only worth a chip once it has been moved off it.
+  const periodChip = usePeriodChip(applied, set);
+  const activeFilters = useMemo<ActiveFilter[]>(() => {
+    const out: ActiveFilter[] = [];
+    if (periodChip) out.push(periodChip);
+    if (applied.category) {
+      out.push({ key: 'category', value: applied.category, onRemove: () => set({ category: '' }) });
+    }
+    return out;
+  }, [periodChip, applied.category, set]);
+
+  const listHeader = (
+    <>
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        placeholder={t('filters.search_income')}
+        activeCount={activeFilters.length}
+        onOpenFilters={() => { filterSheetRef.current?.expand(); openSheet(); }}
+      />
+      <ActiveFilterChips filters={activeFilters} onClearAll={clearAll} />
+    </>
+  );
+
+  const isFiltered = activeFilters.length > 0 || debouncedSearch.length > 0;
+
   const listEmpty = loading ? (
     <TransactionListSkeleton />
   ) : error ? (
     <ErrorState message={error} onRetry={retry} />
+  ) : isFiltered ? (
+    // Telling a user with data to "add your first expense" would be wrong:
+    // the rows exist, the filters are hiding them.
+    <EmptyState
+      icon="filter"
+      title={t('filters.empty_filtered_title')}
+      subtitle={t('filters.empty_filtered_subtitle')}
+      onAction={clearAll}
+      actionLabel={t('filters.clear_filters')}
+    />
   ) : (
     <EmptyState icon="trending-up" title={t('income.empty_title')} subtitle={t('income.empty_subtitle')} onAction={openAdd} actionLabel={t('income.add')} />
   );
@@ -154,15 +228,14 @@ export default function IncomeScreen() {
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
         contentContainerStyle={ss.scroll}
+        keyboardShouldPersistTaps="handled"
         // No pull-to-refresh mid-load: it would fire a duplicate request on top
         // of the one already in flight. Scrolling stays enabled.
         refreshControl={
           loading ? undefined
             : <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.primary} />
         }
-        ListHeaderComponent={
-          <MonthYearPicker month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
-        }
+        ListHeaderComponent={listHeader}
         ListEmptyComponent={listEmpty}
         ListFooterComponent={listFooter}
         onEndReached={loadMore}
@@ -173,11 +246,32 @@ export default function IncomeScreen() {
         windowSize={11}
       />
 
+      <FilterSheet
+        ref={filterSheetRef}
+        onReset={resetDraft}
+        onApply={() => { apply(); filterSheetRef.current?.close(); }}
+        onClose={closeSheet}
+        resultCount={draftCount}
+      >
+        <FilterSection title={t('filters.period')}>
+          <PeriodPicker value={draft} onChange={(next) => setDraft((d) => ({ ...d, ...next }))} />
+        </FilterSection>
+        <FilterSection title={t('filters.category')}>
+          <CategorySelect
+            categories={categories}
+            selected={draft.category}
+            onSelect={(category) => setDraft((d) => ({ ...d, category }))}
+            onAddNew={() => { filterSheetRef.current?.close(); closeSheet(); router.push('/categories'); }}
+          />
+        </FilterSection>
+      </FilterSheet>
+
       <BottomSheet
         ref={sheetRef}
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose
+        onChange={handleSheetChange}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
@@ -190,7 +284,7 @@ export default function IncomeScreen() {
             initial={editing ?? undefined}
             categories={categories}
             onSubmit={handleSubmit}
-            onCancel={closeSheet}
+            onCancel={closeForm}
             loading={saving}
           />
         </BottomSheetScrollView>
@@ -199,6 +293,6 @@ export default function IncomeScreen() {
   );
 }
 
-const localStyles = (colors: any) => StyleSheet.create({
+const localStyles = (colors: Colors) => StyleSheet.create({
   total: { fontSize: 16, fontWeight: '600', marginTop: 2 },
 });

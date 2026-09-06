@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { useBottomSheet } from '../src/hooks/useBottomSheet';
+import { useSheetDismiss } from '../src/hooks/useSheetDismiss';
 import { usePagination } from '../src/hooks/usePagination';
 import NoteCard from '../src/components/ui/NoteCard';
 import NoteForm from '../src/components/forms/NoteForm';
@@ -56,7 +57,9 @@ export default function NotesScreen() {
     pageSize: PAGE_SIZE,
   });
 
-  const { sheetRef, snapPoints, editing, formKey, openAdd, openEdit, closeSheet } = useBottomSheet<Note>();
+  const { sheetRef, snapPoints, editing, formKey, isOpen, openAdd, openEdit, closeSheet, handleSheetChange } = useBottomSheet<Note>();
+
+  useSheetDismiss([{ ref: sheetRef, open: isOpen, onClose: closeSheet }]);
 
   const handleSubmit = async (data: NotePayload) => {
     setSaving(true);
@@ -196,6 +199,7 @@ export default function NotesScreen() {
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose
+        onChange={handleSheetChange}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"

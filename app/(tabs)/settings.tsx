@@ -13,6 +13,7 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useLanguage } from '../../src/contexts/LanguageContext';
 import { useCurrency } from '../../src/contexts/CurrencyContext';
+import { useSheetDismiss } from '../../src/hooks/useSheetDismiss';
 import { settingsService } from '../../src/services/settingsService';
 import { userService } from '../../src/services/userService';
 import type { Settings } from '../../src/types';
@@ -43,11 +44,17 @@ export default function SettingsScreen() {
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const currencySheetRef = useRef<BottomSheet>(null);
+  const [currencySheetOpen, setCurrencySheetOpen] = useState(false);
+
+  useSheetDismiss([{ ref: currencySheetRef, open: currencySheetOpen }]);
 
   const selectedCurrency = supportedCurrencies.find((c) => c.code === settings.currency);
   const initials = getInitials(user?.displayName);
 
-  const openCurrencySheet = useCallback(() => currencySheetRef.current?.expand(), []);
+  const openCurrencySheet = useCallback(() => {
+    setCurrencySheetOpen(true);
+    currencySheetRef.current?.expand();
+  }, []);
   const pickCurrency = useCallback((code: string) => {
     setSettings((prev) => ({ ...prev, currency: code }));
     currencySheetRef.current?.close();
@@ -354,6 +361,7 @@ export default function SettingsScreen() {
         ref={currencySheetRef}
         index={-1}
         enablePanDownToClose
+        onChange={(index) => setCurrencySheetOpen(index !== -1)}
         backgroundStyle={{ backgroundColor: colors.bgPrimary }}
         handleIndicatorStyle={{ backgroundColor: colors.borderColor }}
       >

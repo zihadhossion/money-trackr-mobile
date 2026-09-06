@@ -4,6 +4,9 @@ import BottomSheet from '@gorhom/bottom-sheet';
 export function useBottomSheet<T>() {
   const sheetRef = useRef<BottomSheet>(null);
   const [editing, setEditing] = useState<T | null>(null);
+  // Tracked so the screen can tell whether a back press or a blur has a sheet
+  // to close — the library's ref exposes no index to read.
+  const [isOpen, setIsOpen] = useState(false);
   // Bumped on every open so the form inside the sheet remounts with fresh
   // state — otherwise a second "add" reuses the previous entry's inputs.
   const [formKey, setFormKey] = useState(0);
@@ -12,14 +15,18 @@ export function useBottomSheet<T>() {
   const openAdd = useCallback(() => {
     setEditing(null);
     setFormKey((k) => k + 1);
+    setIsOpen(true);
     sheetRef.current?.expand();
   }, []);
   const openEdit = useCallback((item: T) => {
     setEditing(item);
     setFormKey((k) => k + 1);
+    setIsOpen(true);
     sheetRef.current?.expand();
   }, []);
-  const closeSheet = useCallback(() => { sheetRef.current?.close(); setEditing(null); }, []);
+  const closeSheet = useCallback(() => { sheetRef.current?.close(); setEditing(null); setIsOpen(false); }, []);
+  /** Pass to the sheet's onChange so a swipe-down dismiss is tracked too. */
+  const handleSheetChange = useCallback((index: number) => { setIsOpen(index !== -1); }, []);
 
-  return { sheetRef, snapPoints, editing, formKey, openAdd, openEdit, closeSheet };
+  return { sheetRef, snapPoints, editing, formKey, isOpen, openAdd, openEdit, closeSheet, handleSheetChange };
 }

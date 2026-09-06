@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { useBottomSheet } from '../src/hooks/useBottomSheet';
+import { useSheetDismiss } from '../src/hooks/useSheetDismiss';
 import { useAsyncData } from '../src/hooks/useAsyncData';
 import CategoryCard from '../src/components/ui/CategoryCard';
 import CategoryForm from '../src/components/forms/CategoryForm';
@@ -33,7 +34,9 @@ export default function CategoriesScreen() {
   const [tab, setTab] = useState<TabType>('expense');
   const [saving, setSaving] = useState(false);
 
-  const { sheetRef, snapPoints, editing, formKey, openAdd, openEdit, closeSheet } = useBottomSheet<Category>();
+  const { sheetRef, snapPoints, editing, formKey, isOpen, openAdd, openEdit, closeSheet, handleSheetChange } = useBottomSheet<Category>();
+
+  useSheetDismiss([{ ref: sheetRef, open: isOpen, onClose: closeSheet }]);
 
   const {
     data: categories, loading, refreshing, error, refresh, reload, retry,
@@ -169,6 +172,7 @@ export default function CategoriesScreen() {
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose
+        onChange={handleSheetChange}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"

@@ -24,6 +24,12 @@ const SECTIONS: { icon: FeatherIconName; titleKey: string; descKey: string; tips
     tips: ['guide.dashboard_tip1', 'guide.dashboard_tip2'],
   },
   {
+    icon: 'search',
+    titleKey: 'guide.find_title',
+    descKey: 'guide.find_desc',
+    tips: ['guide.find_tip1', 'guide.find_tip2', 'guide.find_tip3', 'guide.find_tip4'],
+  },
+  {
     icon: 'trending-up',
     titleKey: 'guide.income_title',
     descKey: 'guide.income_desc',
@@ -39,7 +45,7 @@ const SECTIONS: { icon: FeatherIconName; titleKey: string; descKey: string; tips
     icon: 'repeat',
     titleKey: 'guide.lending_title',
     descKey: 'guide.lending_desc',
-    tips: ['guide.lending_tip1', 'guide.lending_tip2', 'guide.lending_tip3'],
+    tips: ['guide.lending_tip1', 'guide.lending_tip2', 'guide.lending_tip3', 'guide.lending_tip4'],
   },
   {
     icon: 'file-text',

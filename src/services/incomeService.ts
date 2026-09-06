@@ -9,9 +9,27 @@ export interface PaginatedIncomes {
   periodTotal: number;
 }
 
+export interface IncomeQuery {
+  // Absent for the "all time" period, which filters by no date at all.
+  startDate?: string;
+  endDate?: string;
+  category?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
 export const incomeService = {
-  async getAll(startDate: string, endDate: string, page = 1, limit = 15): Promise<PaginatedIncomes> {
-    const { data } = await api.get('/income', { params: { startDate, endDate, page, limit } });
+  async getAll({ startDate, endDate, category, search, page = 1, limit = 15 }: IncomeQuery): Promise<PaginatedIncomes> {
+    const { data } = await api.get('/income', {
+      params: {
+        page, limit,
+        ...(startDate ? { startDate } : {}),
+        ...(endDate ? { endDate } : {}),
+        ...(category ? { category } : {}),
+        ...(search ? { search } : {}),
+      },
+    });
     return data;
   },
 

@@ -8,13 +8,24 @@ export interface PaginatedLendings {
   totalPages: number;
 }
 
+export interface LendingQuery {
+  startDate?: string;
+  endDate?: string;
+  type?: string;
+  status?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
 export const lendingService = {
-  async getAll(startDate?: string, endDate?: string, page = 1, limit = 15, type?: string, status?: string): Promise<PaginatedLendings> {
+  async getAll({ startDate, endDate, type, status, search, page = 1, limit = 15 }: LendingQuery = {}): Promise<PaginatedLendings> {
     const params: Record<string, string> = { page: String(page), limit: String(limit) };
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
     if (type) params.type = type;
     if (status) params.status = status;
+    if (search) params.search = search;
     const { data } = await api.get('/lending', { params });
     return data;
   },
