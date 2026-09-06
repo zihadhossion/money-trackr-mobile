@@ -78,7 +78,22 @@ export default function DashboardScreen() {
   const onFocusReload = useCallback(() => { fetchData('silent'); }, [fetchData]);
   useRefreshOnFocus(onFocusReload);
 
-  const budgetPct = overview ? (overview.budgetUsed / (overview.budgetLimit || 1)) * 100 : 0;
+  // budgetUsed already IS a percentage of the monthly budget (the backend does
+  // spent/limit*100). Dividing by the limit again turned 62% into 0.31% here and
+  // kept the 80%/100% alert from ever firing.
+  const budgetPct = overview?.budgetUsed ?? 0;
+  const budgetLimit = overview?.budgetLimit ?? 0;
+  // The endpoint sends no taka figure for the month, so recover it from the
+  // percentage. Only meaningful once a budget exists.
+  const monthExpenses = (budgetPct / 100) * budgetLimit;
+
+  // The overview endpoint returns all-time income/expenses/balance but a
+  // current-month budget, and the two charts are month- and year-scoped. One
+  // header date would mislabel three of the four, so each block states its own.
+  const monthLabel = useMemo(() => {
+    const months = t('months_long', { returnObjects: true }) as readonly string[];
+    return t('dashboard.scope_month_year', { month: months[currentMonth - 1], year: String(currentYear) });
+  }, [t, currentMonth, currentYear]);
 
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.bgSecondary }]}>
@@ -117,7 +132,7 @@ export default function DashboardScreen() {
         )}
 
         {/* Budget alert */}
-        {budgetPct >= 80 && (
+        {budgetLimit > 0 && budgetPct >= 80 && (
           <View style={[s.alert, { backgroundColor: budgetPct >= 100 ? colors.dangerBg : colors.warningBg }]}>
             <Feather name="alert-triangle" size={16} color={budgetPct >= 100 ? colors.danger : colors.warning} />
             <Text style={[s.alertText, { color: budgetPct >= 100 ? colors.dangerText : colors.warningText }]}>
@@ -133,15 +148,41 @@ export default function DashboardScreen() {
           <StatGridSkeleton />
         ) : (
           <View style={s.cardGrid}>
+            <Text style={[s.scope, { color: colors.textMuted }]}>{t('dashboard.scope_all_time')}</Text>
             <View style={s.cardRow}>
-              <StatCard title={t('dashboard.total_income')} value={format(overview?.totalIncome ?? 0)} icon="trending-up" variant="success" />
+              <StatCard
+                title={t('dashboard.total_income')}
+                value={format(overview?.totalIncome ?? 0)}
+                icon="trending-up"
+                variant="success"
+                onPress={() => router.push('/income')}
+                accessibilityLabel={t('a11y.open_income')}
+              />
               <View style={s.cardGap} />
-              <StatCard title={t('dashboard.total_expenses')} value={format(overview?.totalExpenses ?? 0)} icon="trending-down" variant="danger" />
+              <StatCard
+                title={t('dashboard.total_expenses')}
+                value={format(overview?.totalExpenses ?? 0)}
+                icon="trending-down"
+                variant="danger"
+                onPress={() => router.push('/expenses')}
+                accessibilityLabel={t('a11y.open_expenses')}
+              />
             </View>
             <View style={s.cardRow}>
               <StatCard title={t('dashboard.balance')} value={format(overview?.balance ?? 0)} icon="dollar-sign" variant="primary" />
               <View style={s.cardGap} />
-              <StatCard title={t('dashboard.budget_used')} value={`${budgetPct.toFixed(1)}%`} icon="pie-chart" variant="warning" subtitle={t('dashboard.of_budget', { amount: format(overview?.budgetLimit ?? 0) })} />
+              <StatCard
+                title={t('dashboard.budget_used')}
+                value={budgetLimit > 0 ? `${budgetPct.toFixed(1)}%` : '—'}
+                icon="pie-chart"
+                variant="warning"
+                badge={t('dashboard.scope_this_month')}
+                onPress={() => router.push('/settings')}
+                accessibilityLabel={t('a11y.open_budget')}
+                subtitle={budgetLimit > 0
+                  ? t('dashboard.of_budget', { spent: format(monthExpenses), limit: format(budgetLimit) })
+                  : t('dashboard.no_budget_set')}
+              />
             </View>
           </View>
         )}
@@ -151,7 +192,10 @@ export default function DashboardScreen() {
 
         {/* Pie chart */}
         <View style={[s.chartCard, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-          <Text style={[s.chartTitle, { color: colors.textPrimary }]}>{t('dashboard.expenses_by_category')}</Text>
+          <View style={s.chartHeader}>
+            <Text style={[s.chartTitle, { color: colors.textPrimary }]}>{t('dashboard.expenses_by_category')}</Text>
+            <Text style={[s.scope, { color: colors.textMuted }]}>{monthLabel}</Text>
+          </View>
           {loading
             ? <ChartSkeleton />
             : <ExpensePieChart data={expensesByCategory} />}
@@ -159,7 +203,10 @@ export default function DashboardScreen() {
 
         {/* Bar chart */}
         <View style={[s.chartCard, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-          <Text style={[s.chartTitle, { color: colors.textPrimary }]}>{t('dashboard.income_vs_expenses')}</Text>
+          <View style={s.chartHeader}>
+            <Text style={[s.chartTitle, { color: colors.textPrimary }]}>{t('dashboard.income_vs_expenses')}</Text>
+            <Text style={[s.scope, { color: colors.textMuted }]}>{currentYear}</Text>
+          </View>
           {loading
             ? <ChartSkeleton />
             : <TrendsBarChart data={trends} />}
@@ -182,5 +229,7 @@ const styles = (colors: any) => StyleSheet.create({
   cardRow: { flexDirection: 'row' },
   cardGap: { width: 12 },
   chartCard: { borderRadius: 16, padding: 16, borderWidth: 1 },
-  chartTitle: { fontSize: 16, fontWeight: '700', marginBottom: 16 },
+  chartTitle: { fontSize: 16, fontWeight: '700', flexShrink: 1 },
+  chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 16 },
+  scope: { fontSize: 12, fontWeight: '600' },
 });

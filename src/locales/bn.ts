@@ -65,8 +65,25 @@ const bn = {
     edit_note: '{{title}} নোট সম্পাদনা করুন',
     delete_note: '{{title}} নোট মুছুন',
     delete_hint: 'আগে নিশ্চিতকরণ চাওয়া হবে',
+    open_income: 'আয় ট্যাব খুলুন',
+    open_expenses: 'খরচ ট্যাব খুলুন',
+    open_budget: 'বাজেট সেটিংস খুলুন',
     loading_more: 'আরো আইটেম লোড হচ্ছে',
     retry: 'আবার লোড করার চেষ্টা করুন',
+    theme_option: '{{name}} থিম',
+    language_option: '{{name}} ভাষা',
+    signing_in: 'সাইন ইন হচ্ছে',
+    emoji_option: 'আইকন {{icon}}',
+    color_option: 'রঙ {{index}}',
+    amount_input: 'পরিমাণ',
+    repayment_amount_input: 'পরিশোধের পরিমাণ',
+    budget_input: 'মাসিক বাজেট',
+    person_name_input: 'ব্যক্তির নাম',
+    category_name_input: 'বিভাগের নাম',
+    note_title_input: 'নোটের শিরোনাম',
+    note_content_input: 'নোটের বিষয়বস্তু',
+    notes_input: 'নোট',
+    source_input: 'উৎস',
   },
 
   validation: {
@@ -101,9 +118,13 @@ const bn = {
     total_expenses: 'মোট খরচ',
     balance: 'ব্যালেন্স',
     budget_used: 'বাজেট ব্যবহৃত',
-    of_budget: '{{amount}} এর মধ্যে',
+    of_budget: '{{limit}} এর মধ্যে {{spent}}',
+    no_budget_set: 'মাসিক বাজেট সেট করা নেই',
     expenses_by_category: 'বিভাগ অনুযায়ী খরচ',
     income_vs_expenses: 'আয় বনাম খরচ',
+    scope_all_time: 'সর্বকালীন',
+    scope_this_month: 'এই মাস',
+    scope_month_year: '{{month}} {{year}}',
   },
 
   expenses: {
@@ -262,6 +283,7 @@ const bn = {
     settings_tip3: 'মাসিক বাজেট নির্ধারণ করুন — সীমার কাছাকাছি এলে সতর্কতা পাবেন।',
   },
 
+  months_long: ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'],
   months_short: ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টে', 'অক্টো', 'নভে', 'ডিসে'],
 } as const;
 

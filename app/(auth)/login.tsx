@@ -24,7 +24,7 @@ export default function LoginScreen() {
     <View style={s.container}>
       <View style={s.hero}>
         <View style={s.logoContainer}>
-          <Feather name="trending-up" size={40} color={colors.primary} />
+          <Feather name="trending-up" size={40} color={colors.primary} accessibilityElementsHidden importantForAccessibility="no" />
         </View>
         <Text style={s.appName}>{t('auth.app_name')}</Text>
         <Text style={s.tagline}>{t('auth.tagline')}</Text>
@@ -37,7 +37,7 @@ export default function LoginScreen() {
             { icon: 'bell', text: t('auth.feature_budget') },
           ].map(({ icon, text }) => (
             <View key={text} style={s.featureRow}>
-              <View style={s.featureIcon}>
+              <View style={s.featureIcon} accessibilityElementsHidden importantForAccessibility="no">
                 <Feather name={icon as any} size={16} color={colors.primary} />
               </View>
               <Text style={s.featureText}>{text}</Text>
@@ -55,6 +55,9 @@ export default function LoginScreen() {
           onPress={signIn}
           disabled={loading}
           activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={loading ? t('a11y.signing_in') : t('auth.continue_google')}
+          accessibilityState={{ disabled: loading, busy: loading }}
         >
           {loading ? (
             <ActivityIndicator size="small" color={colors.textPrimary} />
@@ -74,6 +77,9 @@ export default function LoginScreen() {
               key={code}
               style={[s.langBtn, { borderColor: language === code ? colors.primary : colors.borderColor, backgroundColor: language === code ? `${colors.primary}15` : colors.bgTertiary }]}
               onPress={() => setLanguage(code)}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.language_option', { name: label })}
+              accessibilityState={{ selected: language === code }}
             >
               <Text style={[s.langBtnText, { color: language === code ? colors.primary : colors.textMuted }]}>{label}</Text>
               {language === code && <Feather name="check" size={13} color={colors.primary} />}
@@ -81,7 +87,13 @@ export default function LoginScreen() {
           ))}
         </View>
 
-        <TouchableOpacity style={s.guideLinkRow} onPress={() => router.push('/guide')}>
+        <TouchableOpacity
+          style={s.guideLinkRow}
+          onPress={() => router.push('/guide')}
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.usage_guide')}
+          accessibilityHint={t('settings.usage_guide_subtitle')}
+        >
           <Feather name="book-open" size={15} color={colors.primary} />
           <Text style={[s.guideLinkText, { color: colors.primary }]}>{t('settings.usage_guide')}</Text>
           <Feather name="chevron-right" size={15} color={colors.primary} />

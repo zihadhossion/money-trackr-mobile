@@ -38,20 +38,27 @@ export default function CategoryForm({ initial, onSubmit, onCancel, loading }: C
       <Text style={fs.title}>{initial?._id ? t('categories.edit') : t('categories.add')}</Text>
 
       {/* Preview */}
-      <View style={[s.preview, { backgroundColor: `${color}20` }]}>
+      <View style={[s.preview, { backgroundColor: `${color}20` }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <Text style={s.previewIcon}>{icon}</Text>
         <Text style={[s.previewName, { color: colors.textPrimary }]}>{name || t('categories.preview_placeholder')}</Text>
       </View>
 
       {/* Name */}
       <Text style={fs.label}>{t('categories.name_label')}</Text>
-      <BottomSheetTextInput style={fs.input} value={name} onChangeText={setName} placeholder={t('common.category_name_placeholder')} placeholderTextColor={colors.textMuted} />
+      <BottomSheetTextInput style={fs.input} value={name} onChangeText={setName} placeholder={t('common.category_name_placeholder')} placeholderTextColor={colors.textMuted} accessibilityLabel={t('a11y.category_name_input')} />
 
       {/* Type */}
       <Text style={fs.label}>{t('categories.type_label')}</Text>
       <View style={s.segmented}>
         {(['expense', 'income'] as const).map((catType) => (
-          <TouchableOpacity key={catType} style={[s.segmentBtn, type === catType && { backgroundColor: colors.primary }]} onPress={() => setType(catType)}>
+          <TouchableOpacity
+            key={catType}
+            style={[s.segmentBtn, type === catType && { backgroundColor: colors.primary }]}
+            onPress={() => setType(catType)}
+            accessibilityRole="button"
+            accessibilityLabel={catType === 'expense' ? t('categories.type_expense') : t('categories.type_income')}
+            accessibilityState={{ selected: type === catType }}
+          >
             <Text style={[s.segmentText, { color: type === catType ? '#fff' : colors.textSecondary }]}>{catType === 'expense' ? t('categories.type_expense') : t('categories.type_income')}</Text>
           </TouchableOpacity>
         ))}
@@ -61,7 +68,14 @@ export default function CategoryForm({ initial, onSubmit, onCancel, loading }: C
       <Text style={fs.label}>{t('categories.icon_label')}</Text>
       <View style={s.emojiGrid}>
         {EMOJIS.map((e) => (
-          <TouchableOpacity key={e} style={[s.emojiBtn, icon === e && { backgroundColor: `${color}30`, borderColor: color }]} onPress={() => setIcon(e)}>
+          <TouchableOpacity
+            key={e}
+            style={[s.emojiBtn, icon === e && { backgroundColor: `${color}30`, borderColor: color }]}
+            onPress={() => setIcon(e)}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.emoji_option', { icon: e })}
+            accessibilityState={{ selected: icon === e }}
+          >
             <Text style={s.emoji}>{e}</Text>
           </TouchableOpacity>
         ))}
@@ -70,14 +84,28 @@ export default function CategoryForm({ initial, onSubmit, onCancel, loading }: C
       {/* Color picker */}
       <Text style={fs.label}>{t('categories.color_label')}</Text>
       <View style={s.colorRow}>
-        {COLORS.map((c) => (
-          <TouchableOpacity key={c} style={[s.colorSwatch, { backgroundColor: c }, color === c && s.colorSelected]} onPress={() => setColor(c)} />
+        {COLORS.map((c, i) => (
+          <TouchableOpacity
+            key={c}
+            style={[s.colorSwatch, { backgroundColor: c }, color === c && s.colorSelected]}
+            onPress={() => setColor(c)}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.color_option', { index: String(i + 1) })}
+            accessibilityState={{ selected: color === c }}
+          />
         ))}
       </View>
 
       <View style={fs.buttons}>
-        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
-        <TouchableOpacity style={[fs.submitBtn, { backgroundColor: colors.primary }]} onPress={handleSubmit} disabled={loading}>
+        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
+        <TouchableOpacity
+          style={[fs.submitBtn, { backgroundColor: colors.primary }]}
+          onPress={handleSubmit}
+          disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.save')}
+          accessibilityState={{ disabled: loading, busy: loading }}
+        >
           <Text style={fs.submitText}>{loading ? t('common.saving') : t('common.save')}</Text>
         </TouchableOpacity>
       </View>

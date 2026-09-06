@@ -37,12 +37,19 @@ export default function RepaymentForm({ personName, remainingAmount, onSubmit, o
       <Text style={fs.label}>{t('common.repayment_amount')}</Text>
       <View style={fs.inputRow}>
         <Text style={fs.currencySymbol}>{symbol}</Text>
-        <BottomSheetTextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} autoFocus />
+        <BottomSheetTextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} autoFocus accessibilityLabel={t('a11y.repayment_amount_input')} />
       </View>
 
       <View style={[fs.buttons, { marginBottom: 0 }]}>
-        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
-        <TouchableOpacity style={[fs.submitBtn, { backgroundColor: colors.success }]} onPress={handleSubmit} disabled={loading}>
+        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
+        <TouchableOpacity
+          style={[fs.submitBtn, { backgroundColor: colors.success }]}
+          onPress={handleSubmit}
+          disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.record')}
+          accessibilityState={{ disabled: loading, busy: loading }}
+        >
           <Text style={fs.submitText}>{loading ? t('common.saving') : t('common.record')}</Text>
         </TouchableOpacity>
       </View>

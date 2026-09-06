@@ -62,6 +62,9 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
             key={lType}
             style={[s.segmentBtn, type === lType && { backgroundColor: colors.primary }]}
             onPress={() => setType(lType)}
+            accessibilityRole="button"
+            accessibilityLabel={lType === LendingType.LENT ? t('lending.lent') : t('lending.borrowed')}
+            accessibilityState={{ selected: type === lType }}
           >
             <Text style={[s.segmentText, { color: type === lType ? '#fff' : colors.textSecondary }]}>{lType === LendingType.LENT ? t('lending.lent') : t('lending.borrowed')}</Text>
           </TouchableOpacity>
@@ -69,16 +72,21 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
       </View>
 
       <Text style={fs.label}>{t('common.person_name')}</Text>
-      <BottomSheetTextInput style={fs.input} value={personName} onChangeText={setPersonName} placeholder={t('common.person_name_placeholder')} placeholderTextColor={colors.textMuted} />
+      <BottomSheetTextInput style={fs.input} value={personName} onChangeText={setPersonName} placeholder={t('common.person_name_placeholder')} placeholderTextColor={colors.textMuted} accessibilityLabel={t('a11y.person_name_input')} />
 
       <Text style={fs.label}>{t('common.amount_required')}</Text>
       <View style={fs.inputRow}>
         <Text style={fs.currencySymbol}>{symbol}</Text>
-        <BottomSheetTextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} />
+        <BottomSheetTextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} accessibilityLabel={t('a11y.amount_input')} />
       </View>
 
       <Text style={fs.label}>{t('common.date')}</Text>
-      <TouchableOpacity style={fs.select} onPress={() => setShowDatePicker(true)}>
+      <TouchableOpacity
+        style={fs.select}
+        onPress={() => setShowDatePicker(true)}
+        accessibilityRole="button"
+        accessibilityLabel={`${t('common.date')}: ${toISODate(date)}`}
+      >
         <Text style={[fs.selectText, { color: colors.textPrimary }]}>{toISODate(date)}</Text>
         <Feather name="calendar" size={16} color={colors.textMuted} />
       </TouchableOpacity>
@@ -87,7 +95,12 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
       )}
 
       <Text style={fs.label}>{t('common.due_date')}</Text>
-      <TouchableOpacity style={fs.select} onPress={() => setShowDueDatePicker(true)}>
+      <TouchableOpacity
+        style={fs.select}
+        onPress={() => setShowDueDatePicker(true)}
+        accessibilityRole="button"
+        accessibilityLabel={`${t('common.due_date')}: ${dueDate ? toISODate(dueDate) : t('common.no_due_date')}`}
+      >
         <Text style={[fs.selectText, { color: dueDate ? colors.textPrimary : colors.textMuted }]}>{dueDate ? toISODate(dueDate) : t('common.no_due_date')}</Text>
         <Feather name="calendar" size={16} color={colors.textMuted} />
       </TouchableOpacity>
@@ -110,6 +123,9 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
                   key={st}
                   style={[s.statusBtn, status === st && { backgroundColor: colors.primary }]}
                   onPress={() => setStatus(st)}
+                  accessibilityRole="button"
+                  accessibilityLabel={statusLabels[st]}
+                  accessibilityState={{ selected: status === st }}
                 >
                   <Text style={[s.statusText, { color: status === st ? '#fff' : colors.textSecondary }]}>{statusLabels[st]}</Text>
                 </TouchableOpacity>
@@ -120,11 +136,18 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
       )}
 
       <Text style={fs.label}>{t('common.notes')}</Text>
-      <BottomSheetTextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} />
+      <BottomSheetTextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} accessibilityLabel={t('a11y.notes_input')} />
 
       <View style={fs.buttons}>
-        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
-        <TouchableOpacity style={[fs.submitBtn, { backgroundColor: colors.primary }]} onPress={handleSubmit} disabled={loading}>
+        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
+        <TouchableOpacity
+          style={[fs.submitBtn, { backgroundColor: colors.primary }]}
+          onPress={handleSubmit}
+          disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.save')}
+          accessibilityState={{ disabled: loading, busy: loading }}
+        >
           <Text style={fs.submitText}>{loading ? t('common.saving') : t('common.save')}</Text>
         </TouchableOpacity>
       </View>

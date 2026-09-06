@@ -104,6 +104,9 @@ export default function SettingsScreen() {
             <TouchableOpacity
               style={[s.themeBtn, { borderColor: theme === 'light' ? colors.primary : colors.borderColor, backgroundColor: theme === 'light' ? `${colors.primary}15` : colors.bgTertiary }]}
               onPress={() => setTheme('light')}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.theme_option', { name: t('settings.light') })}
+              accessibilityState={{ selected: theme === 'light' }}
             >
               <Feather name="sun" size={20} color={theme === 'light' ? colors.primary : colors.textMuted} />
               <Text style={[s.themeBtnText, { color: theme === 'light' ? colors.primary : colors.textMuted }]}>{t('settings.light')}</Text>
@@ -112,6 +115,9 @@ export default function SettingsScreen() {
             <TouchableOpacity
               style={[s.themeBtn, { borderColor: theme === 'dark' ? colors.primary : colors.borderColor, backgroundColor: theme === 'dark' ? `${colors.primary}15` : colors.bgTertiary }]}
               onPress={() => setTheme('dark')}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.theme_option', { name: t('settings.dark') })}
+              accessibilityState={{ selected: theme === 'dark' }}
             >
               <Feather name="moon" size={20} color={theme === 'dark' ? colors.primary : colors.textMuted} />
               <Text style={[s.themeBtnText, { color: theme === 'dark' ? colors.primary : colors.textMuted }]}>{t('settings.dark')}</Text>
@@ -129,6 +135,9 @@ export default function SettingsScreen() {
                 key={code}
                 style={[s.themeBtn, { borderColor: language === code ? colors.primary : colors.borderColor, backgroundColor: language === code ? `${colors.primary}15` : colors.bgTertiary }]}
                 onPress={() => setLanguage(code)}
+                accessibilityRole="button"
+                accessibilityLabel={t('a11y.language_option', { name: label })}
+                accessibilityState={{ selected: language === code }}
               >
                 <Text style={[s.themeBtnText, { color: language === code ? colors.primary : colors.textMuted }]}>{label}</Text>
                 {language === code && <Feather name="check" size={14} color={colors.primary} />}
@@ -166,10 +175,18 @@ export default function SettingsScreen() {
               keyboardType="numeric"
               placeholder="0.00"
               placeholderTextColor={colors.textMuted}
+              accessibilityLabel={t('a11y.budget_input')}
             />
           </View>
 
-          <TouchableOpacity style={[s.saveBtn, { backgroundColor: colors.primary }]} onPress={handleSave} disabled={saving}>
+          <TouchableOpacity
+            style={[s.saveBtn, { backgroundColor: colors.primary }]}
+            onPress={handleSave}
+            disabled={saving}
+            accessibilityRole="button"
+            accessibilityLabel={t('settings.save_settings')}
+            accessibilityState={{ disabled: saving, busy: saving }}
+          >
             <Text style={s.saveBtnText}>{saving ? t('common.saving') : t('settings.save_settings')}</Text>
           </TouchableOpacity>
         </View>
@@ -178,6 +195,9 @@ export default function SettingsScreen() {
         <TouchableOpacity
           style={[s.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor, flexDirection: 'row', alignItems: 'center' }]}
           onPress={() => router.push('/categories')}
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.categories')}
+          accessibilityHint={t('settings.categories_subtitle')}
         >
           <View style={[s.guideIconBox, { backgroundColor: `${colors.primary}20` }]}>
             <Feather name="grid" size={22} color={colors.primary} />
@@ -193,6 +213,9 @@ export default function SettingsScreen() {
         <TouchableOpacity
           style={[s.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor, flexDirection: 'row', alignItems: 'center' }]}
           onPress={() => router.push('/guide')}
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.usage_guide')}
+          accessibilityHint={t('settings.usage_guide_subtitle')}
         >
           <View style={[s.guideIconBox, { backgroundColor: `${colors.primary}20` }]}>
             <Feather name="book-open" size={22} color={colors.primary} />
@@ -205,7 +228,13 @@ export default function SettingsScreen() {
         </TouchableOpacity>
 
         {/* Sign out */}
-        <TouchableOpacity style={[s.signOutBtn, { borderColor: colors.danger }]} onPress={handleSignOut}>
+        <TouchableOpacity
+          style={[s.signOutBtn, { borderColor: colors.danger }]}
+          onPress={handleSignOut}
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.sign_out')}
+          accessibilityHint={t('settings.sign_out_message')}
+        >
           <Feather name="log-out" size={18} color={colors.danger} />
           <Text style={[s.signOutText, { color: colors.danger }]}>{t('settings.sign_out')}</Text>
         </TouchableOpacity>

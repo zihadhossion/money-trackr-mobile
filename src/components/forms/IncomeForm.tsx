@@ -59,6 +59,7 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
             value={amount}
             onChangeText={setAmount}
             keyboardType="numeric"
+            accessibilityLabel={t('a11y.amount_input')}
             placeholder="0.00"
             placeholderTextColor={colors.textMuted}
           />
@@ -99,7 +100,7 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
 
         {/* Source */}
         <Text style={fs.label}>{t('common.source')}</Text>
-        <BottomSheetTextInput style={fs.input} value={source} onChangeText={setSource} placeholder={t('common.source_placeholder')} placeholderTextColor={colors.textMuted} />
+        <BottomSheetTextInput style={fs.input} value={source} onChangeText={setSource} placeholder={t('common.source_placeholder')} placeholderTextColor={colors.textMuted} accessibilityLabel={t('a11y.source_input')} />
 
         {/* Date */}
         <Text style={fs.label}>{t('common.date')}</Text>
@@ -113,7 +114,7 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
 
         {/* Notes */}
         <Text style={fs.label}>{t('common.notes')}</Text>
-        <BottomSheetTextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} />
+        <BottomSheetTextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} accessibilityLabel={t('a11y.notes_input')} />
 
         {/* Buttons */}
         <View style={fs.buttons}>

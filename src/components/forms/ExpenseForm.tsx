@@ -54,7 +54,7 @@ export default function ExpenseForm({ initial, categories, onSubmit, onCancel, l
         <Text style={fs.label}>{t('common.amount_required')}</Text>
         <View style={fs.inputRow}>
           <Text style={fs.currencySymbol}>{symbol}</Text>
-          <BottomSheetTextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} />
+          <BottomSheetTextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} accessibilityLabel={t('a11y.amount_input')} />
         </View>
 
         <Text style={fs.label}>{t('common.category_required')}</Text>
@@ -99,7 +99,7 @@ export default function ExpenseForm({ initial, categories, onSubmit, onCancel, l
         )}
 
         <Text style={fs.label}>{t('common.notes')}</Text>
-        <BottomSheetTextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} />
+        <BottomSheetTextInput style={[fs.input, { minHeight: 70 }]} value={notes} onChangeText={setNotes} multiline placeholder={t('common.optional_notes')} placeholderTextColor={colors.textMuted} accessibilityLabel={t('a11y.notes_input')} />
 
         <View style={fs.buttons}>
           <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>

@@ -41,6 +41,7 @@ export default function NoteForm({ initial, onSubmit, onCancel, loading }: NoteF
         onChangeText={setTitle}
         placeholder={t('notes.title_placeholder')}
         placeholderTextColor={colors.textMuted}
+        accessibilityLabel={t('a11y.note_title_input')}
       />
 
       <Text style={fs.label}>{t('notes.content_label')}</Text>
@@ -52,24 +53,35 @@ export default function NoteForm({ initial, onSubmit, onCancel, loading }: NoteF
         placeholderTextColor={colors.textMuted}
         multiline
         textAlignVertical="top"
+        accessibilityLabel={t('a11y.note_content_input')}
       />
 
       <Text style={fs.label}>{t('notes.color_label')}</Text>
       <View style={s.colorRow}>
-        {NOTE_COLORS.map((c) => (
+        {NOTE_COLORS.map((c, i) => (
           <TouchableOpacity
             key={c}
             style={[s.colorSwatch, { backgroundColor: c }, color === c && s.colorSelected]}
             onPress={() => setColor(c)}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.color_option', { index: String(i + 1) })}
+            accessibilityState={{ selected: color === c }}
           />
         ))}
       </View>
 
       <View style={fs.buttons}>
-        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel}>
+        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel} accessibilityRole="button" accessibilityLabel={t('common.cancel')}>
           <Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[fs.submitBtn, { backgroundColor: colors.primary }]} onPress={handleSubmit} disabled={loading}>
+        <TouchableOpacity
+          style={[fs.submitBtn, { backgroundColor: colors.primary }]}
+          onPress={handleSubmit}
+          disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.save')}
+          accessibilityState={{ disabled: loading, busy: loading }}
+        >
           <Text style={fs.submitText}>{loading ? t('common.saving') : t('common.save')}</Text>
         </TouchableOpacity>
       </View>

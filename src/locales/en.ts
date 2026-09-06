@@ -3,7 +3,7 @@ const en = {
     home: 'Home',
     income: 'Income',
     expenses: 'Expenses',
-    lending: 'Lending',
+    lending: 'Debts',
     settings: 'Settings',
   },
 
@@ -65,8 +65,25 @@ const en = {
     edit_note: 'Edit note {{title}}',
     delete_note: 'Delete note {{title}}',
     delete_hint: 'Asks for confirmation first',
+    open_income: 'Open the Income tab',
+    open_expenses: 'Open the Expenses tab',
+    open_budget: 'Open budget settings',
     loading_more: 'Loading more items',
     retry: 'Try loading again',
+    theme_option: '{{name}} theme',
+    language_option: '{{name}} language',
+    signing_in: 'Signing in',
+    emoji_option: 'Icon {{icon}}',
+    color_option: 'Color option {{index}}',
+    amount_input: 'Amount',
+    repayment_amount_input: 'Repayment amount',
+    budget_input: 'Monthly budget',
+    person_name_input: 'Person name',
+    category_name_input: 'Category name',
+    note_title_input: 'Note title',
+    note_content_input: 'Note content',
+    notes_input: 'Notes',
+    source_input: 'Source',
   },
 
   validation: {
@@ -101,9 +118,13 @@ const en = {
     total_expenses: 'Total Expenses',
     balance: 'Balance',
     budget_used: 'Budget Used',
-    of_budget: 'of {{amount}}',
+    of_budget: '{{spent}} of {{limit}}',
+    no_budget_set: 'No monthly budget set',
     expenses_by_category: 'Expenses by Category',
     income_vs_expenses: 'Income vs Expenses',
+    scope_all_time: 'All time',
+    scope_this_month: 'This month',
+    scope_month_year: '{{month}} {{year}}',
   },
 
   expenses: {
@@ -127,14 +148,16 @@ const en = {
   },
 
   lending: {
-    title: 'Lending',
+    // The screen holds both directions (LENT and BORROWED), so every string
+    // here stays neutral — "Lending" alone hid half the feature.
+    title: 'Debts',
     add_record: 'Add Record',
-    add: 'Add Lending',
-    edit: 'Edit Lending',
+    add: 'Add Record',
+    edit: 'Edit Record',
     delete_title: 'Delete',
-    delete_message: 'Delete lending record for {{name}}?',
-    empty_title: 'No lending records',
-    empty_subtitle: 'Track money lent or borrowed',
+    delete_message: 'Delete the record for {{name}}?',
+    empty_title: 'No records yet',
+    empty_subtitle: 'Track money you lent or borrowed',
     lent: 'Lent',
     borrowed: 'Borrowed',
     repay: 'Repay',
@@ -262,6 +285,7 @@ const en = {
     settings_tip3: "Set a monthly budget — you'll get a warning when you're close to the limit.",
   },
 
+  months_long: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
   months_short: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 } as const;
 
