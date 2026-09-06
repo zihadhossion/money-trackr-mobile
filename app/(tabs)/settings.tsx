@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { AVATAR } from '../../src/theme/shapes';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useLanguage } from '../../src/contexts/LanguageContext';
 import { useCurrency } from '../../src/contexts/CurrencyContext';
@@ -19,6 +20,7 @@ import { userService } from '../../src/services/userService';
 import type { Settings } from '../../src/types';
 import { getErrorMessage } from '../../src/utils/error';
 import { getCurrencySymbol } from '../../src/utils/currency';
+import { fontSize, fontWeight, MAX_FONT_SCALE } from '../../src/theme/typography';
 
 /**
  * Falls back to the user's initials rather than a generic person icon, which
@@ -170,7 +172,9 @@ export default function SettingsScreen() {
             {user?.photoURL ? (
               <Image source={{ uri: user.photoURL }} style={s.avatarImage} />
             ) : initials ? (
-              <Text style={[s.avatarInitials, { color: colors.primary }]}>{initials}</Text>
+              <Text style={[s.avatarInitials, { color: colors.primary }]} maxFontSizeMultiplier={MAX_FONT_SCALE}>
+                {initials}
+              </Text>
             ) : (
               <Feather name="user" size={28} color={colors.primary} />
             )}
@@ -301,7 +305,7 @@ export default function SettingsScreen() {
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('settings.notes')}</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 13 }}>{t('settings.notes_subtitle')}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: fontSize.meta }}>{t('settings.notes_subtitle')}</Text>
           </View>
           <Feather name="chevron-right" size={20} color={colors.textMuted} />
         </TouchableOpacity>
@@ -319,7 +323,7 @@ export default function SettingsScreen() {
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('settings.categories')}</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 13 }}>{t('settings.categories_subtitle')}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: fontSize.meta }}>{t('settings.categories_subtitle')}</Text>
           </View>
           <Feather name="chevron-right" size={20} color={colors.textMuted} />
         </TouchableOpacity>
@@ -337,7 +341,7 @@ export default function SettingsScreen() {
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('settings.usage_guide')}</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 13 }}>{t('settings.usage_guide_subtitle')}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: fontSize.meta }}>{t('settings.usage_guide_subtitle')}</Text>
           </View>
           <Feather name="chevron-right" size={20} color={colors.textMuted} />
         </TouchableOpacity>
@@ -393,42 +397,42 @@ export default function SettingsScreen() {
 const styles = (colors: any) => StyleSheet.create({
   safe: { flex: 1 },
   scroll: { padding: 16, paddingBottom: 60, gap: 16 },
-  pageTitle: { fontSize: 22, fontWeight: '700' },
+  pageTitle: { fontSize: fontSize.title, fontWeight: fontWeight.bold },
   card: { borderRadius: 16, padding: 16, borderWidth: 1, gap: 12 },
-  avatar: { width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center' },
-  avatarImage: { width: 60, height: 60, borderRadius: 30 },
-  avatarOverlay: { ...StyleSheet.absoluteFillObject, borderRadius: 30, justifyContent: 'center', alignItems: 'center' },
-  avatarInitials: { fontSize: 20, fontWeight: '700', letterSpacing: 0.5 },
+  avatar: { width: AVATAR.size, height: AVATAR.size, borderRadius: AVATAR.radius, justifyContent: 'center', alignItems: 'center' },
+  avatarImage: { width: AVATAR.size, height: AVATAR.size, borderRadius: AVATAR.radius },
+  avatarOverlay: { ...StyleSheet.absoluteFillObject, borderRadius: AVATAR.radius, justifyContent: 'center', alignItems: 'center' },
+  avatarInitials: { fontSize: AVATAR.initialsSize, fontWeight: fontWeight.bold, letterSpacing: 0.5 },
   // Kept flush with the avatar's edge rather than overhanging it: Android
   // clips children that fall outside their parent's bounds, which would eat
   // part of the badge and the taps that land on it.
   avatarBadge: { position: 'absolute', right: 0, bottom: 0, width: 22, height: 22, borderRadius: 11, borderWidth: 2, justifyContent: 'center', alignItems: 'center' },
   profileCard: { flexDirection: 'row', alignItems: 'center' },
   profileInfo: { flex: 1 },
-  profileName: { fontSize: 17, fontWeight: '700' },
-  profileEmail: { fontSize: 13 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  profileName: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold },
+  profileEmail: { fontSize: fontSize.meta },
+  sectionTitle: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold, marginBottom: 4 },
   themeRow: { flexDirection: 'row', gap: 12 },
   themeBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, borderWidth: 1.5, padding: 12 },
-  themeBtnText: { flex: 1, fontSize: 14, fontWeight: '600' },
-  label: { fontSize: 13, fontWeight: '600', marginBottom: 4 },
-  hint: { fontSize: 12, marginTop: -8, marginBottom: 4 },
+  themeBtnText: { flex: 1, fontSize: fontSize.body, fontWeight: fontWeight.semibold },
+  label: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold, marginBottom: 4 },
+  hint: { fontSize: fontSize.meta, marginTop: -8, marginBottom: 4 },
   select: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderRadius: 10, padding: 12 },
   // The sheet sizes itself to this view and the tab bar (60px, drawn by the
   // navigator outside this screen) overlays its bottom edge, so the last row
   // needs to clear both that and the gesture bar.
   sheet: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 84, gap: 4 },
-  sheetTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
+  sheetTitle: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold, marginBottom: 8 },
   sheetRow: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 14 },
-  currencySymbolBadge: { fontSize: 16, fontWeight: '700', width: 20, textAlign: 'center' },
-  currencyText: { fontSize: 14 },
+  currencySymbolBadge: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold, width: 20, textAlign: 'center' },
+  currencyText: { fontSize: fontSize.body },
   inputRow: { flexDirection: 'row', alignItems: 'center', borderRadius: 10, borderWidth: 1, paddingHorizontal: 12 },
-  symbol: { fontSize: 18, marginRight: 8 },
-  input: { flex: 1, fontSize: 16, paddingVertical: 12 },
+  symbol: { fontSize: fontSize.emphasis, marginRight: 8 },
+  input: { flex: 1, fontSize: fontSize.emphasis, paddingVertical: 12 },
   saveBtn: { borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
-  saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  saveBtnText: { color: '#fff', fontSize: fontSize.body, fontWeight: fontWeight.bold },
   guideIconBox: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   signOutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 12, borderWidth: 1.5, paddingVertical: 14 },
-  signOutText: { fontSize: 15, fontWeight: '700' },
-  version: { textAlign: 'center', fontSize: 12 },
+  signOutText: { fontSize: fontSize.body, fontWeight: fontWeight.bold },
+  version: { textAlign: 'center', fontSize: fontSize.meta },
 });

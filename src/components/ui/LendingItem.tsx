@@ -11,6 +11,7 @@ import { LendingType } from '../../enums/lending-type.enum';
 import { LendingStatus } from '../../enums/lending-status.enum';
 import RowAction from './RowAction';
 import { LENDING_CARD as C } from '../../theme/shapes';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface LendingItemProps {
   item: Lending;
@@ -118,13 +119,13 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   typeIcon: { width: C.iconSize, height: C.iconSize, borderRadius: C.iconRadius, justifyContent: 'center', alignItems: 'center' },
-  name: { fontSize: 15, fontWeight: '600' },
-  typeLabel: { fontSize: 12 },
+  name: { fontSize: fontSize.body, fontWeight: fontWeight.semibold },
+  typeLabel: { fontSize: fontSize.meta },
   statusBadge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
-  statusText: { fontSize: 12, fontWeight: '600' },
+  statusText: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold },
   amountRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  amountLabel: { fontSize: 11, marginBottom: 2 },
-  amount: { fontSize: 16, fontWeight: '700' },
-  dueDate: { fontSize: 12 },
+  amountLabel: { fontSize: fontSize.caption, marginBottom: 2 },
+  amount: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold },
+  dueDate: { fontSize: fontSize.meta },
   actions: { flexDirection: 'row', justifyContent: 'flex-end' },
 });

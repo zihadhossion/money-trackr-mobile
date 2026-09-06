@@ -33,6 +33,7 @@ import type { Colors } from '../../src/theme/colors';
 import { getErrorMessage } from '../../src/utils/error';
 import type { Lending, LendingPayload, LendingSummary } from '../../src/types';
 import LendingListSkeleton from '../../src/components/skeletons/LendingListSkeleton';
+import { fontSize, fontWeight } from '../../src/theme/typography';
 
 type SheetMode = 'form' | 'repayment' | null;
 type FilterType = '' | 'LENT' | 'BORROWED';
@@ -393,5 +394,5 @@ export default function LendingScreen() {
 }
 
 const localStyles = (colors: Colors) => StyleSheet.create({
-  total: { fontSize: 16, fontWeight: '600', marginTop: 2 },
+  total: { fontSize: fontSize.emphasis, fontWeight: fontWeight.semibold, marginTop: 2 },
 });

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { fontSize, fontWeight, lineHeight } from '../../theme/typography';
 
 interface EmptyStateProps {
   icon?: React.ComponentProps<typeof Feather>['name'];
@@ -42,8 +43,8 @@ const styles = StyleSheet.create({
   container: { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 24 },
   group: { alignItems: 'center' },
   iconWrap: { width: 72, height: 72, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  title: { fontSize: 16, fontWeight: '600', marginBottom: 6, textAlign: 'center' },
-  subtitle: { fontSize: 13, textAlign: 'center', marginBottom: 20, lineHeight: 20 },
+  title: { fontSize: fontSize.emphasis, fontWeight: fontWeight.semibold, marginBottom: 6, textAlign: 'center' },
+  subtitle: { fontSize: fontSize.meta, textAlign: 'center', marginBottom: 20, lineHeight: lineHeight.meta },
   btn: { borderRadius: 10, minHeight: 44, paddingHorizontal: 24, justifyContent: 'center', alignItems: 'center' },
-  btnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  btnText: { color: '#fff', fontWeight: fontWeight.semibold, fontSize: fontSize.body },
 });

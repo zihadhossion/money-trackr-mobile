@@ -72,19 +72,3 @@ export const lineHeight = {
  * Pass to <Text maxFontSizeMultiplier={MAX_FONT_SCALE}>.
  */
 export const MAX_FONT_SCALE = 1.35;
-
-type SizeKey = keyof typeof fontSize;
-
-/**
- * Ready-made text styles, so a component spreads one token instead of
- * restating a size and a weight. `multiline` adds the matching lineHeight.
- */
-export const text = (
-  size: SizeKey,
-  weight: keyof typeof fontWeight = 'regular',
-  multiline = false,
-) => ({
-  fontSize: fontSize[size],
-  fontWeight: fontWeight[weight],
-  ...(multiline ? { lineHeight: lineHeight[size] } : null),
-} as const);

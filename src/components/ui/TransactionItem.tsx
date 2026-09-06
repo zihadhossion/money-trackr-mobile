@@ -7,6 +7,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { formatDate, DATE_FNS_LOCALES } from '../../utils/date';
 import RowAction from './RowAction';
 import { TRANSACTION_ROW as R } from '../../theme/shapes';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface TransactionItemProps {
   icon: string;
@@ -96,12 +97,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  iconText: { fontSize: 20 },
+  iconText: { fontSize: R.emojiSize },
   info: { flex: 1, gap: 2 },
-  category: { fontSize: 14, fontWeight: '600' },
-  note: { fontSize: 12 },
-  date: { fontSize: 12 },
+  category: { fontSize: fontSize.body, fontWeight: fontWeight.semibold },
+  note: { fontSize: fontSize.meta },
+  date: { fontSize: fontSize.meta },
   right: { alignItems: 'flex-end', gap: 2 },
-  amount: { fontSize: 15, fontWeight: '700' },
+  amount: { fontSize: fontSize.body, fontWeight: fontWeight.bold },
   actions: { flexDirection: 'row' },
 });

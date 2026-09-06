@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { formStyles } from '../../theme/formStyles';
 import { PALETTE_COLORS } from '../../theme/colors';
+import { CATEGORY_EMOJI } from '../../theme/shapes';
 import type { Category } from '../../types';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 const EMOJIS = ['🍔', '🚗', '🏠', '💊', '📚', '👗', '🎮', '✈️', '⚡', '📱', '💄', '🐾', '💪', '🎬', '🍷', '☕', '💰', '📈', '🎁', '🔧', '🏋️', '🌱', '💻', '🎯'];
 const COLORS = [...PALETTE_COLORS, '#f97316', '#ec4899'];
@@ -115,14 +117,14 @@ export default function CategoryForm({ initial, onSubmit, onCancel, loading }: C
 
 const localStyles = (colors: any) => StyleSheet.create({
   preview: { alignItems: 'center', borderRadius: 14, padding: 20, marginBottom: 8 },
-  previewIcon: { fontSize: 36, marginBottom: 8 },
-  previewName: { fontSize: 16, fontWeight: '600' },
+  previewIcon: { fontSize: CATEGORY_EMOJI.previewSize, marginBottom: 8 },
+  previewName: { fontSize: fontSize.emphasis, fontWeight: fontWeight.semibold },
   segmented: { flexDirection: 'row', borderRadius: 10, borderWidth: 1, borderColor: colors.borderColor, overflow: 'hidden' },
   segmentBtn: { flex: 1, padding: 10, alignItems: 'center' },
-  segmentText: { fontSize: 14, fontWeight: '600' },
+  segmentText: { fontSize: fontSize.body, fontWeight: fontWeight.semibold },
   emojiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  emojiBtn: { width: 44, height: 44, borderRadius: 10, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: colors.borderColor },
-  emoji: { fontSize: 22 },
+  emojiBtn: { minWidth: 44, minHeight: 44, padding: 6, borderRadius: 10, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: colors.borderColor },
+  emoji: { fontSize: CATEGORY_EMOJI.optionSize },
   colorRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   colorSwatch: { width: 34, height: 34, borderRadius: 17 },
   colorSelected: { borderWidth: 3, borderColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 4 },

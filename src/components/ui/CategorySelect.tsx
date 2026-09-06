@@ -7,6 +7,7 @@ import type { Colors } from '../../theme/colors';
 import type { Category } from '../../types';
 import CategoryOptionList from './CategoryOptionList';
 import { TOUCH_TARGET } from '../../theme/shapes';
+import { fontSize } from '../../theme/typography';
 
 interface CategorySelectProps {
   categories: Category[];
@@ -68,7 +69,7 @@ const styles = (colors: Colors) => StyleSheet.create({
     minHeight: TOUCH_TARGET, paddingHorizontal: 12, borderRadius: 10,
     borderWidth: 1, borderColor: colors.borderColor, backgroundColor: colors.bgTertiary,
   },
-  selectText: { fontSize: 14, flex: 1 },
+  selectText: { fontSize: fontSize.body, flex: 1 },
   // The sheet scrolls, so the list expands in place rather than capping its
   // own height and trapping a second scroller inside the first.
   list: { marginTop: 4, borderRadius: 10, borderWidth: 1, borderColor: colors.borderColor, paddingVertical: 4 },

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Colors } from '../../theme/colors';
 import { TOUCH_TARGET } from '../../theme/shapes';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 export interface SegmentOption<T extends string> {
   value: T;
@@ -57,5 +58,5 @@ const styles = (colors: Colors) => StyleSheet.create({
     padding: 3, gap: 3,
   },
   segment: { flex: 1, minHeight: TOUCH_TARGET - 8, borderRadius: 9, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4 },
-  text: { fontSize: 13, fontWeight: '600' },
+  text: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold },
 });

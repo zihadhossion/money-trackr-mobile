@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { screenStyles } from '../src/theme/screenStyles';
 import type { Colors } from '../src/theme/colors';
+import { fontSize, fontWeight, lineHeight } from '../src/theme/typography';
 
 type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
 
@@ -122,9 +123,9 @@ const styles = (colors: Colors) => StyleSheet.create({
   card: { borderRadius: 16, padding: 16, borderWidth: 1, gap: 10 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   iconBox: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  sectionTitle: { fontSize: 16, fontWeight: '700' },
-  desc: { fontSize: 14, lineHeight: 20 },
+  sectionTitle: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold },
+  desc: { fontSize: fontSize.body, lineHeight: lineHeight.body },
   tipRow: { flexDirection: 'row', gap: 8 },
-  bullet: { fontSize: 16, lineHeight: 20, fontWeight: '700' },
-  tipText: { flex: 1, fontSize: 13, lineHeight: 20 },
+  bullet: { fontSize: fontSize.body, lineHeight: lineHeight.body, fontWeight: fontWeight.bold },
+  tipText: { flex: 1, fontSize: fontSize.meta, lineHeight: lineHeight.meta },
 });

@@ -4,6 +4,7 @@ import { Feather } from "@expo/vector-icons";
 import { useTheme } from "../../contexts/ThemeContext";
 import type { Colors } from "../../theme/colors";
 import { STAT_CARD as C } from "../../theme/shapes";
+import { fontSize } from '../../theme/typography';
 
 type Variant = "success" | "danger" | "primary" | "warning" | "secondary";
 
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   badge: {
-    fontSize: 10,
+    fontSize: fontSize.caption,
     fontWeight: "600",
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -188,17 +189,17 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   title: {
-    fontSize: 12,
+    fontSize: fontSize.meta,
     fontWeight: "500",
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   value: {
-    fontSize: 18,
+    fontSize: fontSize.emphasis,
     fontWeight: "700",
   },
   subtitle: {
-    fontSize: 11,
+    fontSize: fontSize.caption,
   },
   trendRow: {
     flexDirection: "row",
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   trendText: {
-    fontSize: 12,
+    fontSize: fontSize.meta,
     fontWeight: "600",
   },
 });

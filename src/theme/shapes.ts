@@ -27,6 +27,8 @@ export const TRANSACTION_ROW = {
   marginBottom: 8,
   iconSize: 42,
   iconRadius: 12,
+  /** The category emoji drawn inside iconWrap. Artwork, not text. */
+  emojiSize: 20,
 } as const;
 
 /** LendingItem / LendingListSkeleton */
@@ -72,6 +74,8 @@ export const CATEGORY_CARD = {
   minWidth: 90,
   iconSize: 50,
   iconRadius: 14,
+  /** The category emoji drawn inside iconWrap. Artwork, not text. */
+  emojiSize: 24,
 } as const;
 
 /** NoteCard / NoteListSkeleton */
@@ -80,4 +84,22 @@ export const NOTE_CARD = {
   radius: 14,
   marginBottom: 10,
   accentWidth: 4,
+} as const;
+
+/**
+ * CategoryForm's emoji picker. Both numbers size a glyph to its container, so
+ * they belong here rather than on the type scale.
+ */
+export const CATEGORY_EMOJI = {
+  /** The large preview above the form. */
+  previewSize: 36,
+  /** One option in the picker grid. */
+  optionSize: 22,
+} as const;
+
+/** The settings avatar. initialsSize is a glyph fitted to the circle. */
+export const AVATAR = {
+  size: 60,
+  radius: 30,
+  initialsSize: 20,
 } as const;

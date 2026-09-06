@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLanguage } from '../../src/contexts/LanguageContext';
+import { fontSize, fontWeight, lineHeight } from '../../src/theme/typography';
 
 export default function LoginScreen() {
   const { signIn, isAuthenticated, loading, error } = useAuth();
@@ -132,13 +133,13 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       elevation: 4,
     },
     appName: {
-      fontSize: 28,
-      fontWeight: '700',
+      fontSize: fontSize.display,
+      fontWeight: fontWeight.bold,
       color: colors.textPrimary,
       marginBottom: 6,
     },
     tagline: {
-      fontSize: 15,
+      fontSize: fontSize.body,
       color: colors.textMuted,
       marginBottom: 32,
       textAlign: 'center',
@@ -161,9 +162,9 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       alignItems: 'center',
     },
     featureText: {
-      fontSize: 15,
+      fontSize: fontSize.body,
       color: colors.textSecondary,
-      fontWeight: '500',
+      fontWeight: fontWeight.medium,
     },
     card: {
       backgroundColor: colors.bgPrimary,
@@ -176,13 +177,13 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       elevation: 4,
     },
     welcomeTitle: {
-      fontSize: 22,
-      fontWeight: '700',
+      fontSize: fontSize.title,
+      fontWeight: fontWeight.bold,
       color: colors.textPrimary,
       marginBottom: 6,
     },
     welcomeSubtitle: {
-      fontSize: 14,
+      fontSize: fontSize.body,
       color: colors.textMuted,
       marginBottom: 24,
     },
@@ -200,20 +201,20 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       marginBottom: 16,
     },
     googleIcon: {
-      fontSize: 18,
-      fontWeight: '700',
+      fontSize: fontSize.emphasis,
+      fontWeight: fontWeight.bold,
       color: colors.primary,
     },
     googleButtonText: {
-      fontSize: 16,
-      fontWeight: '600',
+      fontSize: fontSize.emphasis,
+      fontWeight: fontWeight.semibold,
       color: colors.textPrimary,
     },
     terms: {
-      fontSize: 12,
+      fontSize: fontSize.meta,
       color: colors.textMuted,
       textAlign: 'center',
-      lineHeight: 18,
+      lineHeight: lineHeight.meta,
     },
     langRow: {
       flexDirection: 'row',
@@ -231,8 +232,8 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       paddingVertical: 10,
     },
     langBtnText: {
-      fontSize: 13,
-      fontWeight: '600',
+      fontSize: fontSize.meta,
+      fontWeight: fontWeight.semibold,
     },
     guideLinkRow: {
       flexDirection: 'row',
@@ -242,7 +243,7 @@ const styles = (colors: ReturnType<typeof import('../../src/contexts/ThemeContex
       marginTop: 14,
     },
     guideLinkText: {
-      fontSize: 13,
-      fontWeight: '600',
+      fontSize: fontSize.meta,
+      fontWeight: fontWeight.semibold,
     },
   });

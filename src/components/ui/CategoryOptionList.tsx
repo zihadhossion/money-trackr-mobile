@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { Colors } from '../../theme/colors';
 import type { Category } from '../../types';
 import { TOUCH_TARGET } from '../../theme/shapes';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface CategoryOptionListProps {
   categories: Category[];
@@ -77,12 +78,12 @@ const styles = (colors: Colors) => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     minHeight: TOUCH_TARGET, paddingHorizontal: 12, borderRadius: 10,
   },
-  rowText: { fontSize: 14, flex: 1 },
-  empty: { fontSize: 13, color: colors.textMuted, paddingHorizontal: 12, paddingVertical: 10 },
+  rowText: { fontSize: fontSize.body, flex: 1 },
+  empty: { fontSize: fontSize.meta, color: colors.textMuted, paddingHorizontal: 12, paddingVertical: 10 },
   addRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     minHeight: TOUCH_TARGET, paddingHorizontal: 12, borderRadius: 10,
     borderTopWidth: 1, borderTopColor: colors.borderColor, marginTop: 4,
   },
-  addText: { fontSize: 14, fontWeight: '600', color: colors.primary },
+  addText: { fontSize: fontSize.body, fontWeight: fontWeight.semibold, color: colors.primary },
 });

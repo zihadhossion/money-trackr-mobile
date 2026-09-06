@@ -4,6 +4,7 @@ import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Colors } from '../../theme/colors';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface FilterSheetProps {
   children: React.ReactNode;
@@ -21,7 +22,7 @@ export function FilterSection({ title, children }: { title: string; children: Re
   const { colors } = useTheme();
   return (
     <View style={{ gap: 10, marginBottom: 20 }}>
-      <Text style={{ fontSize: 12, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textMuted }}>
+      <Text style={{ fontSize: fontSize.meta, fontWeight: fontWeight.bold, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textMuted }}>
         {title}
       </Text>
       {children}
@@ -96,8 +97,8 @@ const styles = (colors: Colors) => StyleSheet.create({
     paddingHorizontal: 16, paddingTop: 4, paddingBottom: 12,
     borderBottomWidth: 1, borderBottomColor: colors.borderColor,
   },
-  title: { fontSize: 17, fontWeight: '700', color: colors.textPrimary },
-  reset: { fontSize: 14, fontWeight: '600', color: colors.textMuted },
+  title: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold, color: colors.textPrimary },
+  reset: { fontSize: fontSize.body, fontWeight: fontWeight.semibold, color: colors.textMuted },
   body: { padding: 16, paddingBottom: 8 },
   // Clears the tab bar (60px, drawn by the navigator outside this screen)
   // plus the gesture bar, the same allowance the currency sheet makes.
@@ -106,5 +107,5 @@ const styles = (colors: Colors) => StyleSheet.create({
     backgroundColor: colors.bgPrimary,
   },
   applyBtn: { borderRadius: 12, paddingVertical: 14, alignItems: 'center', backgroundColor: colors.primary },
-  applyText: { color: colors.white, fontSize: 15, fontWeight: '700' },
+  applyText: { color: colors.white, fontSize: fontSize.body, fontWeight: fontWeight.bold },
 });

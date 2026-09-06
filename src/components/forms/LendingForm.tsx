@@ -11,6 +11,7 @@ import type { Lending, LendingPayload } from '../../types';
 import { LendingType } from '../../enums/lending-type.enum';
 import { LendingStatus } from '../../enums/lending-status.enum';
 import { toISODate } from '../../utils/date';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface LendingFormProps {
   initial?: Partial<Lending>;
@@ -158,8 +159,8 @@ export default function LendingForm({ initial, onSubmit, onCancel, loading }: Le
 const localStyles = (colors: any) => StyleSheet.create({
   segmented: { flexDirection: 'row', borderRadius: 10, borderWidth: 1, borderColor: colors.borderColor, overflow: 'hidden' },
   segmentBtn: { flex: 1, padding: 10, alignItems: 'center' },
-  segmentText: { fontSize: 14, fontWeight: '600' },
+  segmentText: { fontSize: fontSize.body, fontWeight: fontWeight.semibold },
   statusRow: { flexDirection: 'row', gap: 8 },
   statusBtn: { flex: 1, borderRadius: 8, borderWidth: 1, borderColor: colors.borderColor, padding: 8, alignItems: 'center' },
-  statusText: { fontSize: 12, fontWeight: '600' },
+  statusText: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold },
 });

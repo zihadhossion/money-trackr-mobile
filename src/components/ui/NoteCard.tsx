@@ -6,6 +6,7 @@ import { resolveNoteColor } from '../../utils/noteColor';
 import type { Note } from '../../types';
 import RowAction from './RowAction';
 import { NOTE_CARD as C } from '../../theme/shapes';
+import { fontSize, fontWeight, lineHeight } from '../../theme/typography';
 
 interface NoteCardProps {
   note: Note;
@@ -61,8 +62,8 @@ const styles = StyleSheet.create({
   card: { flexDirection: 'row', borderRadius: C.radius, borderWidth: 1, overflow: 'hidden', marginBottom: C.marginBottom },
   accent: { width: C.accentWidth },
   body: { flex: 1, padding: C.padding, paddingRight: 4 },
-  title: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
-  content: { fontSize: 13, lineHeight: 19 },
+  title: { fontSize: fontSize.body, fontWeight: fontWeight.bold, marginBottom: 4 },
+  content: { fontSize: fontSize.meta, lineHeight: lineHeight.meta },
   // Pinned to the top so the pair does not drift as the content grows to three lines.
   actions: { flexDirection: 'row', alignItems: 'flex-start', paddingTop: 6, paddingRight: 4 },
 });

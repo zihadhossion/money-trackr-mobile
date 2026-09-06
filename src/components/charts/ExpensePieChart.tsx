@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { PALETTE_COLORS } from '../../theme/colors';
 import type { CategoryData } from '../../types';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface ExpensePieChartProps {
   data: CategoryData[];
@@ -68,8 +69,8 @@ const styles = StyleSheet.create({
   legend: { width: '100%', gap: 8 },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   legendDot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
-  legendLabel: { flex: 1, fontSize: 13 },
-  legendAmount: { fontSize: 13, fontWeight: '600' },
+  legendLabel: { flex: 1, fontSize: fontSize.meta },
+  legendAmount: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold },
   empty: { borderRadius: 12, padding: 24, alignItems: 'center' },
-  emptyText: { fontSize: 14 },
+  emptyText: { fontSize: fontSize.body },
 });

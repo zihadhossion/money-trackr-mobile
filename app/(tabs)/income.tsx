@@ -33,6 +33,7 @@ import { screenStyles } from '../../src/theme/screenStyles';
 import { getErrorMessage } from '../../src/utils/error';
 import type { Income, Category } from '../../src/types';
 import TransactionListSkeleton from '../../src/components/skeletons/TransactionListSkeleton';
+import { fontSize, fontWeight } from '../../src/theme/typography';
 
 const NO_EXTRA_FILTERS = { category: '' };
 
@@ -294,5 +295,5 @@ export default function IncomeScreen() {
 }
 
 const localStyles = (colors: Colors) => StyleSheet.create({
-  total: { fontSize: 16, fontWeight: '600', marginTop: 2 },
+  total: { fontSize: fontSize.emphasis, fontWeight: fontWeight.semibold, marginTop: 2 },
 });

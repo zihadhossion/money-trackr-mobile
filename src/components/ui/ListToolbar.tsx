@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Colors } from '../../theme/colors';
 import { TOUCH_TARGET } from '../../theme/shapes';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface ListToolbarProps {
   search: string;
@@ -81,16 +82,16 @@ const styles = (colors: Colors) => StyleSheet.create({
   },
   // No vertical padding: the box sets the height, and padding on Android
   // pushes the text off-centre inside it.
-  input: { flex: 1, fontSize: 14, color: colors.textPrimary, paddingVertical: 0 },
+  input: { flex: 1, fontSize: fontSize.body, color: colors.textPrimary, paddingVertical: 0 },
   filterBtn: {
     width: TOUCH_TARGET, height: TOUCH_TARGET, borderRadius: 12, borderWidth: 1,
     borderColor: colors.borderColor, backgroundColor: colors.bgPrimary,
     justifyContent: 'center', alignItems: 'center',
   },
   badge: {
-    position: 'absolute', top: -4, right: -4, minWidth: 18, height: 18,
-    borderRadius: 9, paddingHorizontal: 5, backgroundColor: colors.primary,
+    position: 'absolute', top: -4, right: -4, minWidth: 18, minHeight: 18,
+    borderRadius: 9, paddingHorizontal: 5, paddingVertical: 2, backgroundColor: colors.primary,
     justifyContent: 'center', alignItems: 'center',
   },
-  badgeText: { color: colors.white, fontSize: 11, fontWeight: '700' },
+  badgeText: { color: colors.white, fontSize: fontSize.caption, fontWeight: fontWeight.bold },
 });

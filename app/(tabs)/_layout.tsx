@@ -3,7 +3,8 @@ import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text } from 'react-native';
+import { fontSize, fontWeight, MAX_FONT_SCALE } from '../../src/theme/typography';
 
 export default function TabsLayout() {
   const { colors } = useTheme();
@@ -35,7 +36,20 @@ export default function TabsLayout() {
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
+        // The bar's height is fixed, so its labels are the one place in the app
+        // that cannot grow with the OS font setting — they clip instead. Rendering
+        // the label here is the only way to cap it: React Navigation offers a
+        // label style and an allowFontScaling flag, neither of which carries a
+        // maxFontSizeMultiplier.
+        tabBarLabel: ({ color, children }) => (
+          <Text
+            numberOfLines={1}
+            maxFontSizeMultiplier={MAX_FONT_SCALE}
+            style={{ color, fontSize: fontSize.caption, fontWeight: fontWeight.medium }}
+          >
+            {children}
+          </Text>
+        ),
       }}
     >
       <Tabs.Screen

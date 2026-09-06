@@ -23,6 +23,7 @@ import { screenStyles } from '../src/theme/screenStyles';
 import { TOUCH_TARGET } from '../src/theme/shapes';
 import type { Note, NotePayload } from '../src/types';
 import { getErrorMessage } from '../src/utils/error';
+import { fontSize } from '../src/theme/typography';
 
 const PAGE_SIZE = 20;
 
@@ -223,5 +224,5 @@ export default function NotesScreen() {
 const localStyles = StyleSheet.create({
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginBottom: 8, paddingHorizontal: 12, borderRadius: 12, borderWidth: 1 },
   clearBtn: { width: TOUCH_TARGET, height: TOUCH_TARGET, justifyContent: 'center', alignItems: 'center' },
-  searchInput: { flex: 1, paddingVertical: 10, fontSize: 14 },
+  searchInput: { flex: 1, paddingVertical: 10, fontSize: fontSize.body },
 });

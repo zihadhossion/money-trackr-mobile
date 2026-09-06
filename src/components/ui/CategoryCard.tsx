@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { Category } from '../../types';
 import RowAction from './RowAction';
 import { CATEGORY_CARD as C } from '../../theme/shapes';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface CategoryCardProps {
   category: Category;
@@ -67,9 +68,9 @@ const styles = StyleSheet.create({
   },
   identity: { alignItems: 'center', gap: 8 },
   iconWrap: { width: C.iconSize, height: C.iconSize, borderRadius: C.iconRadius, justifyContent: 'center', alignItems: 'center' },
-  icon: { fontSize: 24 },
-  name: { fontSize: 13, fontWeight: '600', textAlign: 'center' },
+  icon: { fontSize: C.emojiSize },
+  name: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold, textAlign: 'center' },
   actions: { flexDirection: 'row' },
   defaultBadge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 },
-  defaultText: { fontSize: 10, fontWeight: '600' },
+  defaultText: { fontSize: fontSize.caption, fontWeight: fontWeight.semibold },
 });

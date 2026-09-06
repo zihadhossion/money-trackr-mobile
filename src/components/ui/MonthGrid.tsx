@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Colors } from '../../theme/colors';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface MonthGridProps {
   month: number;
@@ -69,7 +70,7 @@ const styles = (colors: Colors) => StyleSheet.create({
   container: { gap: 10 },
   yearRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
   yearBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
-  yearText: { fontSize: 16, fontWeight: '700', minWidth: 50, textAlign: 'center', color: colors.textPrimary },
+  yearText: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold, minWidth: 50, textAlign: 'center', color: colors.textPrimary },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   // Four to a row, whatever the screen width: three gaps of 8 shared out.
   cell: {
@@ -77,5 +78,5 @@ const styles = (colors: Colors) => StyleSheet.create({
     borderColor: colors.borderColor, backgroundColor: colors.bgTertiary,
     justifyContent: 'center', alignItems: 'center',
   },
-  cellText: { fontSize: 13, fontWeight: '600' },
+  cellText: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold },
 });

@@ -22,6 +22,7 @@ import { screenStyles } from '../src/theme/screenStyles';
 import { TOUCH_TARGET } from '../src/theme/shapes';
 import type { Category } from '../src/types';
 import { getErrorMessage } from '../src/utils/error';
+import { fontSize, fontWeight } from '../src/theme/typography';
 
 type TabType = 'expense' | 'income';
 
@@ -196,7 +197,7 @@ export default function CategoriesScreen() {
 const localStyles = StyleSheet.create({
   tabs: { flexDirection: 'row', marginHorizontal: 16, borderRadius: 12, borderWidth: 1, overflow: 'hidden', marginBottom: 8 },
   tab: { flex: 1, minHeight: TOUCH_TARGET, justifyContent: 'center', alignItems: 'center', borderRadius: 10 },
-  tabText: { fontSize: 14, fontWeight: '600' },
+  tabText: { fontSize: fontSize.body, fontWeight: fontWeight.semibold },
   row: { gap: 10, marginBottom: 10 },
   // Capped so a last row holding one or two tiles keeps the column width
   // instead of stretching them across the screen.

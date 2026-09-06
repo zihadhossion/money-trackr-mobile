@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Colors } from '../../theme/colors';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 export interface ActiveFilter {
   key: string;
@@ -70,8 +71,8 @@ const styles = (colors: Colors) => StyleSheet.create({
     borderWidth: 1, borderColor: colors.primary, backgroundColor: `${colors.primary}15`,
   },
   chipBody: { justifyContent: 'center' },
-  chipLabel: { fontSize: 10, fontWeight: '600', color: colors.textMuted, textTransform: 'uppercase' },
-  chipValue: { fontSize: 13, fontWeight: '600', color: colors.primary },
+  chipLabel: { fontSize: fontSize.caption, fontWeight: fontWeight.semibold, color: colors.textMuted, textTransform: 'uppercase' },
+  chipValue: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold, color: colors.primary },
   clearBtn: { paddingVertical: 6, paddingHorizontal: 4 },
-  clearText: { fontSize: 13, fontWeight: '600', color: colors.textMuted, textDecorationLine: 'underline' },
+  clearText: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold, color: colors.textMuted, textDecorationLine: 'underline' },
 });

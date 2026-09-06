@@ -21,6 +21,7 @@ import ErrorState from '../../src/components/ui/ErrorState';
 import { getErrorMessage } from '../../src/utils/error';
 import { useCurrency } from '../../src/contexts/CurrencyContext';
 import type { Overview, CategoryData, TrendData, LendingSummary } from '../../src/types';
+import { fontSize, fontWeight, lineHeight } from '../../src/theme/typography';
 
 export default function DashboardScreen() {
   const { colors } = useTheme();
@@ -222,17 +223,17 @@ const styles = (colors: any) => StyleSheet.create({
   safe: { flex: 1 },
   scroll: { padding: 16, gap: 16, paddingBottom: 32 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  greeting: { fontSize: 13 },
-  name: { fontSize: 22, fontWeight: '700' },
-  headerBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 42, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1 },
-  headerBtnText: { fontSize: 14, fontWeight: '600' },
+  greeting: { fontSize: fontSize.meta },
+  name: { fontSize: fontSize.title, fontWeight: fontWeight.bold },
+  headerBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 42, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1 },
+  headerBtnText: { fontSize: fontSize.body, fontWeight: fontWeight.semibold },
   alert: { borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  alertText: { flex: 1, fontSize: 13, lineHeight: 18 },
+  alertText: { flex: 1, fontSize: fontSize.meta, lineHeight: lineHeight.meta },
   cardGrid: { gap: 12 },
   cardRow: { flexDirection: 'row' },
   cardGap: { width: 12 },
   chartCard: { borderRadius: 16, padding: 16, borderWidth: 1 },
-  chartTitle: { fontSize: 16, fontWeight: '700', flexShrink: 1 },
+  chartTitle: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold, flexShrink: 1 },
   chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 16 },
-  scope: { fontSize: 12, fontWeight: '600' },
+  scope: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold },
 });

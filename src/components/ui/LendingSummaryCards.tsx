@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import type { LendingSummary } from '../../types';
 import { SUMMARY_CARD as C } from '../../theme/shapes';
+import { fontSize, fontWeight } from '../../theme/typography';
 
 interface LendingSummaryCardsProps {
   summary: LendingSummary;
@@ -35,6 +36,6 @@ export default React.memo(function LendingSummaryCards({ summary }: LendingSumma
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 12, marginBottom: 12 },
   card: { flex: 1, borderRadius: C.radius, padding: C.padding, borderWidth: 1, gap: 4 },
-  label: { fontSize: 12 },
-  amount: { fontSize: 17, fontWeight: '700' },
+  label: { fontSize: fontSize.meta },
+  amount: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold },
 });

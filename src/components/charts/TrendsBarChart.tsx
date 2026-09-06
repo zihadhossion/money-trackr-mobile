@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { TrendData } from '../../types';
+import { fontSize } from '../../theme/typography';
 
 interface TrendsBarChartProps {
   data: TrendData[];
@@ -30,7 +31,7 @@ export default React.memo(function TrendsBarChart({ data }: TrendsBarChartProps)
       frontColor: colors.success,
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: { color: colors.textSecondary, fontSize: 10 },
+      labelTextStyle: { color: colors.textSecondary, fontSize: fontSize.caption },
     },
     {
       value: item.expenses,
@@ -58,7 +59,7 @@ export default React.memo(function TrendsBarChart({ data }: TrendsBarChartProps)
         noOfSections={4}
         maxValue={Math.max(...data.map((d) => Math.max(d.income, d.expenses)), 100) * 1.2}
         width={screenWidth - 80}
-        yAxisTextStyle={{ color: colors.textSecondary, fontSize: 10 }}
+        yAxisTextStyle={{ color: colors.textSecondary, fontSize: fontSize.caption }}
         rulesColor={colors.borderColor}
         yAxisColor={colors.borderColor}
         xAxisColor={colors.borderColor}
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
   legend: { flexDirection: 'row', gap: 16, justifyContent: 'center' },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { fontSize: 13 },
+  legendText: { fontSize: fontSize.meta },
   empty: { borderRadius: 12, padding: 24, alignItems: 'center' },
-  emptyText: { fontSize: 14 },
+  emptyText: { fontSize: fontSize.body },
 });
