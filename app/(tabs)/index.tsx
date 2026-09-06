@@ -112,14 +112,16 @@ export default function DashboardScreen() {
             <Text style={[s.greeting, { color: colors.textMuted }]}>{t('dashboard.welcome_back')}</Text>
             <Text style={[s.name, { color: colors.textPrimary }]}>{user?.displayName ?? 'User'}</Text>
           </View>
+          {/* Notes is the one screen with no tab of its own, so a bare icon
+              here was the whole of its discoverability. The label carries it. */}
           <TouchableOpacity
             style={[s.headerBtn, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}
             onPress={() => router.push('/notes')}
             accessibilityRole="button"
-            accessibilityLabel={t('notes.title')}
             hitSlop={8}
           >
-            <Feather name="file-text" size={20} color={colors.primary} />
+            <Feather name="file-text" size={18} color={colors.primary} />
+            <Text style={[s.headerBtnText, { color: colors.primary }]}>{t('notes.title')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -222,7 +224,8 @@ const styles = (colors: any) => StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   greeting: { fontSize: 13 },
   name: { fontSize: 22, fontWeight: '700' },
-  headerBtn: { width: 42, height: 42, borderRadius: 12, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
+  headerBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 42, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1 },
+  headerBtnText: { fontSize: 14, fontWeight: '600' },
   alert: { borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   alertText: { flex: 1, fontSize: 13, lineHeight: 18 },
   cardGrid: { gap: 12 },

@@ -84,6 +84,7 @@ const bn = {
     note_content_input: 'নোটের বিষয়বস্তু',
     notes_input: 'নোট',
     source_input: 'উৎস',
+    change_profile_photo: 'প্রোফাইল ছবি পরিবর্তন করুন',
   },
 
   validation: {
@@ -238,10 +239,20 @@ const bn = {
     sign_out_title: 'সাইন আউট',
     sign_out_message: 'আপনি কি নিশ্চিতভাবে সাইন আউট করতে চান?',
     language: 'ভাষা',
+    notes: 'নোট',
+    notes_subtitle: 'আপনার সংরক্ষিত নোট ও মনে রাখার কথা',
     categories: 'বিভাগ',
     categories_subtitle: 'আয় ও খরচের বিভাগ পরিচালনা করুন',
     usage_guide: 'ব্যবহার নির্দেশিকা',
     usage_guide_subtitle: 'অ্যাপ ব্যবহার করতে শিখুন',
+    profile_photo: 'প্রোফাইল ছবি',
+    change_photo: 'ছবি কোথা থেকে নেবেন বাছুন',
+    take_photo: 'ছবি তুলুন',
+    choose_from_gallery: 'গ্যালারি থেকে বাছুন',
+    photo_updated: 'প্রোফাইল ছবি আপডেট হয়েছে',
+    failed_photo: 'প্রোফাইল ছবি আপডেট করা যায়নি',
+    permission_needed: 'অনুমতি প্রয়োজন',
+    camera_permission: 'প্রোফাইল ছবি তুলতে ক্যামেরার অনুমতি দরকার।',
   },
 
   guide: {
@@ -270,6 +281,11 @@ const bn = {
     lending_tip1: 'কাউকে টাকা দিলে "দেওয়া" এবং নিলে "নেওয়া" নির্বাচন করুন।',
     lending_tip2: 'একটি রেকর্ডে "পরিশোধ" চেপে আংশিক বা সম্পূর্ণ পরিশোধ লিখুন।',
     lending_tip3: 'উপরের সারসংক্ষেপ কার্ডে মোট বকেয়া দেওয়া ও নেওয়া পরিমাণ দেখুন।',
+
+    notes_title: 'নোট',
+    notes_desc: 'টাকার হিসাবের পাশাপাশি ছোট লেখা নোট রাখুন।',
+    notes_tip1: 'হোম স্ক্রিনের বোতাম থেকে, অথবা সেটিংস থেকে নোট খুলুন।',
+    notes_tip2: 'প্রতিটি নোটে রঙ দিন, আর শিরোনাম বা লেখা দিয়ে খুঁজে বের করুন।',
 
     categories_title: 'বিভাগ',
     categories_desc: 'কাস্টম বিভাগ দিয়ে আয় ও খরচ সংগঠিত করুন।',

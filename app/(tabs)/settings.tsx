@@ -1,25 +1,37 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator,
+  TextInput, Alert, ActivityIndicator, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useLanguage } from '../../src/contexts/LanguageContext';
 import { useCurrency } from '../../src/contexts/CurrencyContext';
 import { settingsService } from '../../src/services/settingsService';
+import { userService } from '../../src/services/userService';
 import type { Settings } from '../../src/types';
 import { getErrorMessage } from '../../src/utils/error';
 import { getCurrencySymbol } from '../../src/utils/currency';
 
+/**
+ * Falls back to the user's initials rather than a generic person icon, which
+ * looks identical for everyone and reads as an empty slot rather than as them.
+ */
+function getInitials(name?: string) {
+  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '';
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+}
+
 export default function SettingsScreen() {
   const { colors, theme, setTheme } = useTheme();
-  const { user, signOut } = useAuth();
+  const { user, signOut, updateUser } = useAuth();
   const { language, setLanguage, supportedLanguages } = useLanguage();
   const { setCurrency, supportedCurrencies } = useCurrency();
   const { t } = useTranslation();
@@ -29,9 +41,11 @@ export default function SettingsScreen() {
   const [budget, setBudget] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const currencySheetRef = useRef<BottomSheet>(null);
 
   const selectedCurrency = supportedCurrencies.find((c) => c.code === settings.currency);
+  const initials = getInitials(user?.displayName);
 
   const openCurrencySheet = useCallback(() => currencySheetRef.current?.expand(), []);
   const pickCurrency = useCallback((code: string) => {
@@ -64,6 +78,56 @@ export default function SettingsScreen() {
     }
   };
 
+  const uploadPhoto = async (uri: string) => {
+    setUploadingPhoto(true);
+    try {
+      const { photoURL } = await userService.uploadProfileImage(uri);
+      await updateUser({ photoURL });
+      Alert.alert(t('common.success'), t('settings.photo_updated'));
+    } catch (e) {
+      Alert.alert(t('common.error'), getErrorMessage(e, t('settings.failed_photo')));
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const takePhoto = async () => {
+    // Only the camera needs asking for: the gallery goes through the system
+    // photo picker, which hands back one image without any grant of its own.
+    const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+    if (!granted) {
+      Alert.alert(t('settings.permission_needed'), t('settings.camera_permission'));
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (!result.canceled) await uploadPhoto(result.assets[0].uri);
+  };
+
+  const chooseFromGallery = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      allowsEditing: true,
+      aspect: [1, 1],
+      // Left uncompressed on purpose — userService resizes and re-encodes it
+      // once, and compressing twice only costs quality.
+      quality: 1,
+    });
+    if (!result.canceled) await uploadPhoto(result.assets[0].uri);
+  };
+
+  const handleChangePhoto = () => {
+    if (uploadingPhoto) return;
+    Alert.alert(t('settings.profile_photo'), t('settings.change_photo'), [
+      { text: t('settings.take_photo'), onPress: takePhoto },
+      { text: t('settings.choose_from_gallery'), onPress: chooseFromGallery },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
+  };
+
   const handleSignOut = () => {
     Alert.alert(t('settings.sign_out_title'), t('settings.sign_out_message'), [
       { text: t('common.cancel'), style: 'cancel' },
@@ -87,13 +151,39 @@ export default function SettingsScreen() {
         <Text style={[s.pageTitle, { color: colors.textPrimary }]}>{t('settings.title')}</Text>
 
         {/* Profile card */}
-        <View style={[s.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
-          <View style={[s.avatar, { backgroundColor: `${colors.primary}20` }]}>
-            <Feather name="user" size={28} color={colors.primary} />
-          </View>
+        <View style={[s.card, s.profileCard, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor }]}>
+          <TouchableOpacity
+            style={[s.avatar, { backgroundColor: `${colors.primary}20` }]}
+            onPress={handleChangePhoto}
+            disabled={uploadingPhoto}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.change_profile_photo')}
+            accessibilityState={{ disabled: uploadingPhoto, busy: uploadingPhoto }}
+          >
+            {user?.photoURL ? (
+              <Image source={{ uri: user.photoURL }} style={s.avatarImage} />
+            ) : initials ? (
+              <Text style={[s.avatarInitials, { color: colors.primary }]}>{initials}</Text>
+            ) : (
+              <Feather name="user" size={28} color={colors.primary} />
+            )}
+            {uploadingPhoto ? (
+              <View style={[s.avatarOverlay, { backgroundColor: `${colors.bgPrimary}cc` }]}>
+                <ActivityIndicator size="small" color={colors.primary} />
+              </View>
+            ) : (
+              <View style={[s.avatarBadge, { backgroundColor: colors.primary, borderColor: colors.bgPrimary }]}>
+                <Feather name="camera" size={11} color="#fff" />
+              </View>
+            )}
+          </TouchableOpacity>
           <View style={s.profileInfo}>
-            <Text style={[s.profileName, { color: colors.textPrimary }]}>{user?.displayName}</Text>
-            <Text style={[s.profileEmail, { color: colors.textMuted }]}>{user?.email}</Text>
+            <Text style={[s.profileName, { color: colors.textPrimary }]} numberOfLines={1}>
+              {user?.displayName}
+            </Text>
+            <Text style={[s.profileEmail, { color: colors.textMuted }]} numberOfLines={1}>
+              {user?.email}
+            </Text>
           </View>
         </View>
 
@@ -191,6 +281,24 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Notes */}
+        <TouchableOpacity
+          style={[s.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor, flexDirection: 'row', alignItems: 'center' }]}
+          onPress={() => router.push('/notes')}
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.notes')}
+          accessibilityHint={t('settings.notes_subtitle')}
+        >
+          <View style={[s.guideIconBox, { backgroundColor: `${colors.primary}20` }]}>
+            <Feather name="file-text" size={22} color={colors.primary} />
+          </View>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('settings.notes')}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 13 }}>{t('settings.notes_subtitle')}</Text>
+          </View>
+          <Feather name="chevron-right" size={20} color={colors.textMuted} />
+        </TouchableOpacity>
+
         {/* Categories */}
         <TouchableOpacity
           style={[s.card, { backgroundColor: colors.bgPrimary, borderColor: colors.borderColor, flexDirection: 'row', alignItems: 'center' }]}
@@ -280,7 +388,15 @@ const styles = (colors: any) => StyleSheet.create({
   pageTitle: { fontSize: 22, fontWeight: '700' },
   card: { borderRadius: 16, padding: 16, borderWidth: 1, gap: 12 },
   avatar: { width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center' },
-  profileInfo: { flex: 1, justifyContent: 'center' },
+  avatarImage: { width: 60, height: 60, borderRadius: 30 },
+  avatarOverlay: { ...StyleSheet.absoluteFillObject, borderRadius: 30, justifyContent: 'center', alignItems: 'center' },
+  avatarInitials: { fontSize: 20, fontWeight: '700', letterSpacing: 0.5 },
+  // Kept flush with the avatar's edge rather than overhanging it: Android
+  // clips children that fall outside their parent's bounds, which would eat
+  // part of the badge and the taps that land on it.
+  avatarBadge: { position: 'absolute', right: 0, bottom: 0, width: 22, height: 22, borderRadius: 11, borderWidth: 2, justifyContent: 'center', alignItems: 'center' },
+  profileCard: { flexDirection: 'row', alignItems: 'center' },
+  profileInfo: { flex: 1 },
   profileName: { fontSize: 17, fontWeight: '700' },
   profileEmail: { fontSize: 13 },
   sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },

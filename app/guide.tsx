@@ -42,6 +42,12 @@ const SECTIONS: { icon: FeatherIconName; titleKey: string; descKey: string; tips
     tips: ['guide.lending_tip1', 'guide.lending_tip2', 'guide.lending_tip3'],
   },
   {
+    icon: 'file-text',
+    titleKey: 'guide.notes_title',
+    descKey: 'guide.notes_desc',
+    tips: ['guide.notes_tip1', 'guide.notes_tip2'],
+  },
+  {
     icon: 'grid',
     titleKey: 'guide.categories_title',
     descKey: 'guide.categories_desc',

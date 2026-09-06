@@ -18,6 +18,7 @@ interface AuthContextType {
   error: string | null;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
+  updateUser: (patch: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -27,6 +28,7 @@ const AuthContext = createContext<AuthContextType>({
   error: null,
   signIn: async () => {},
   signOut: async () => {},
+  updateUser: async () => {},
   isAuthenticated: false,
 });
 
@@ -160,6 +162,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  /**
+   * Patches the signed-in profile in place. The cached copy is what a cold
+   * start renders from, so it has to move with the context or the old value
+   * comes back on the next launch.
+   */
+  const updateUser = async (patch: Partial<User>) => {
+    if (!user) return;
+    const next = { ...user, ...patch };
+    setUser(next);
+    await setUserData(JSON.stringify(next));
+  };
+
   const signOut = async () => {
     setLoading(true);
     try {
@@ -174,7 +188,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, signIn, signOut, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, loading, error, signIn, signOut, updateUser, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

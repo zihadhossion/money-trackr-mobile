@@ -84,6 +84,7 @@ const en = {
     note_content_input: 'Note content',
     notes_input: 'Notes',
     source_input: 'Source',
+    change_profile_photo: 'Change profile photo',
   },
 
   validation: {
@@ -240,10 +241,20 @@ const en = {
     sign_out_title: 'Sign Out',
     sign_out_message: 'Are you sure you want to sign out?',
     language: 'Language',
+    notes: 'Notes',
+    notes_subtitle: 'Your saved notes and reminders',
     categories: 'Categories',
     categories_subtitle: 'Manage income and expense categories',
     usage_guide: 'Usage Guide',
     usage_guide_subtitle: 'Learn how to use the app',
+    profile_photo: 'Profile Photo',
+    change_photo: 'Choose where to take the picture from',
+    take_photo: 'Take a photo',
+    choose_from_gallery: 'Choose from gallery',
+    photo_updated: 'Profile photo updated',
+    failed_photo: 'Failed to update profile photo',
+    permission_needed: 'Permission needed',
+    camera_permission: 'Camera access is required to take a profile photo.',
   },
 
   guide: {
@@ -272,6 +283,11 @@ const en = {
     lending_tip1: 'Choose "Lent" when you give money to someone, "Borrowed" when you receive.',
     lending_tip2: 'Tap "Repay" on a record to log partial or full repayments.',
     lending_tip3: 'Summary cards at the top show total outstanding lent and borrowed amounts.',
+
+    notes_title: 'Notes',
+    notes_desc: 'Keep short written notes alongside your money records.',
+    notes_tip1: 'Open Notes from the button on the home screen, or from Settings.',
+    notes_tip2: 'Give each note a colour, and search by title or content to find it later.',
 
     categories_title: 'Categories',
     categories_desc: 'Organise your income and expenses with custom categories.',
