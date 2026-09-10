@@ -71,21 +71,22 @@ export default function ExpenseForm({ initial, categories, onSubmit, onCancel, l
           <Feather name="chevron-down" size={16} color={colors.textMuted} />
         </TouchableOpacity>
         {showCategoryPicker && (
+          // No inner ScrollView: a plain one isn't part of the sheet's gesture
+          // system, so the sheet's pan cancels its drag. The list renders in
+          // full and the sheet's own scroll view moves it.
           <View style={[fs.dropdown, { backgroundColor: colors.bgTertiary }]}>
-            <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">
-              {expenseCategories.map((c) => (
-                <TouchableOpacity
-                  key={c._id}
-                  style={fs.dropdownItem}
-                  onPress={() => { setCategory(c.name); setShowCategoryPicker(false); }}
-                  accessibilityRole="button"
-                  accessibilityLabel={c.name}
-                  accessibilityState={{ selected: category === c.name }}
-                >
-                  <Text style={[fs.dropdownText, { color: colors.textPrimary }]}>{c.icon} {c.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            {expenseCategories.map((c) => (
+              <TouchableOpacity
+                key={c._id}
+                style={fs.dropdownItem}
+                onPress={() => { setCategory(c.name); setShowCategoryPicker(false); }}
+                accessibilityRole="button"
+                accessibilityLabel={c.name}
+                accessibilityState={{ selected: category === c.name }}
+              >
+                <Text style={[fs.dropdownText, { color: colors.textPrimary }]}>{c.icon} {c.name}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         )}
 
