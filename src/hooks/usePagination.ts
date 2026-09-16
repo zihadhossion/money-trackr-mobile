@@ -68,6 +68,7 @@ export function usePagination<T, M = undefined>({
   // matches belongs to a superseded request — dropping it stops a late page 2
   // from appending duplicates on top of freshly reloaded page-1 data.
   const requestId = useRef(0);
+  const loadingMoreRef = useRef(false);
 
   const loadPage = useCallback(async (pageNum: number, indicator: Indicator = 'initial') => {
     if (pageNum === 1) {
@@ -78,6 +79,7 @@ export function usePagination<T, M = undefined>({
       else if (indicator === 'initial') setLoading(true);
     } else {
       setLoadingMore(true);
+      loadingMoreRef.current = true;
     }
     const id = requestId.current;
 
@@ -101,6 +103,7 @@ export function usePagination<T, M = undefined>({
       if (id === requestId.current) {
         setLoading(false);
         setLoadingMore(false);
+        loadingMoreRef.current = false;
         setRefreshing(false);
         setReloading(false);
       }
@@ -138,12 +141,10 @@ export function usePagination<T, M = undefined>({
   }, [loadPage, page]);
 
   const loadMore = useCallback(() => {
-    // FlatList fires onEndReached on every layout pass where the content is
-    // shorter than the viewport, which a short list always is. Without these
-    // guards that requests page 2 while page 1 is still in flight.
-    if (firstPageInFlight.current || loading || loadingMore || !hasMore || data.length === 0) return;
+    if (firstPageInFlight.current || loading || loadingMoreRef.current || !hasMore || data.length === 0) return;
+    loadingMoreRef.current = true;
     setPage((prev) => prev + 1);
-  }, [loading, loadingMore, hasMore, data.length]);
+  }, [loading, hasMore, data.length]);
 
   return { data, meta, loading, loadingMore, refreshing, hasMore, reloading, error, refresh, reload, retry, loadMore };
 }
