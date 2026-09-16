@@ -11,6 +11,14 @@ const AVATAR_QUALITY = 0.7;
 
 export const userService = {
   /**
+   * Updates the user's display name (and any future profile fields).
+   */
+  async updateProfile(profile: { displayName?: string }): Promise<{ user: User }> {
+    const { data } = await api.put('/users/profile', profile);
+    return data;
+  },
+
+  /**
    * Resizes a picked image, uploads it, and returns the hosted URL.
    */
   async uploadProfileImage(uri: string): Promise<{ photoURL: string; user?: User }> {

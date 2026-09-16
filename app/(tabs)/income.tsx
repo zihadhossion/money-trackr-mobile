@@ -4,7 +4,7 @@ import {
   Alert, RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetScrollView, type BottomSheetScrollViewMethods } from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -47,6 +47,7 @@ export default function IncomeScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [saving, setSaving] = useState(false);
   const filterSheetRef = useRef<BottomSheet>(null);
+  const formScrollRef = useRef<BottomSheetScrollViewMethods>(null);
 
   const {
     applied, draft, setDraft, search, setSearch, debouncedSearch,
@@ -80,6 +81,14 @@ export default function IncomeScreen() {
 
   // Tab screens stay mounted, so pull fresh data whenever this one is focused.
   useRefreshOnFocus(useCallback(() => { reload(); loadCategories(); }, [reload, loadCategories]));
+
+  // Created from inside the form; appended locally so the form can select it
+  // straight away without a refetch.
+  const createCategory = useCallback(async (data: Omit<Category, '_id' | 'isDefault'>) => {
+    const created = await categoryService.create(data);
+    setCategories((prev) => [...prev, created]);
+    return created;
+  }, []);
 
   const { sheetRef, snapPoints, editing, formKey, isOpen: formOpen, openAdd, openEdit, closeSheet: closeForm, handleSheetChange } = useBottomSheet<Income>();
 
@@ -279,12 +288,14 @@ export default function IncomeScreen() {
         backgroundStyle={{ backgroundColor: colors.bgPrimary }}
         handleIndicatorStyle={{ backgroundColor: colors.borderColor }}
       >
-        <BottomSheetScrollView>
+        <BottomSheetScrollView ref={formScrollRef}>
           <IncomeForm
             key={formKey}
             initial={editing ?? undefined}
             categories={categories}
             onSubmit={handleSubmit}
+            onCreateCategory={createCategory}
+            scrollRef={formScrollRef}
             onCancel={closeForm}
             loading={saving}
           />

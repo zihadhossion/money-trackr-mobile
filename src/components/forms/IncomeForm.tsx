@@ -1,12 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, type RefObject } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, Pressable } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
-import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { BottomSheetTextInput, type BottomSheetScrollViewMethods } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { formStyles } from '../../theme/formStyles';
+import QuickCategoryCreator from '../ui/QuickCategoryCreator';
 import type { Income, Category } from '../../types';
 import { toISODate } from '../../utils/date';
 
@@ -14,11 +15,14 @@ interface IncomeFormProps {
   initial?: Partial<Income>;
   categories: Category[];
   onSubmit: (data: Omit<Income, '_id'>) => Promise<void>;
+  onCreateCategory: (data: Omit<Category, '_id' | 'isDefault'>) => Promise<Category>;
+  /** The sheet's scroll view, so the inline category creator can scroll clear of the keyboard. */
+  scrollRef: RefObject<BottomSheetScrollViewMethods | null>;
   onCancel: () => void;
   loading?: boolean;
 }
 
-export default function IncomeForm({ initial, categories, onSubmit, onCancel, loading }: IncomeFormProps) {
+export default function IncomeForm({ initial, categories, onSubmit, onCreateCategory, scrollRef, onCancel, loading }: IncomeFormProps) {
   const { colors } = useTheme();
   const { symbol } = useCurrency();
   const { t } = useTranslation();
@@ -31,8 +35,21 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
   const [date, setDate] = useState<Date>(initial?.date ? new Date(initial.date) : new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [addingCategory, setAddingCategory] = useState(false);
 
+  const incomeCategories = categories.filter((c) => c.type === 'income');
   const selectedCat = categories.find((c) => c.name === category);
+
+  function closePicker() {
+    setShowCategoryPicker(false);
+    setAddingCategory(false);
+  }
+
+  // Stray taps and scrolls close the picker, except mid-way through adding a
+  // category, where they would discard the half-typed name.
+  function dismissPicker() {
+    if (!addingCategory) closePicker();
+  }
 
   async function handleSubmit() {
     if (!amount || isNaN(Number(amount))) return Alert.alert(t('common.validation'), t('validation.valid_amount'));
@@ -44,10 +61,10 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
     <ScrollView
       style={fs.container}
       keyboardShouldPersistTaps="handled"
-      onScrollBeginDrag={() => setShowCategoryPicker(false)}
+      onScrollBeginDrag={dismissPicker}
     >
       {/* Tapping any inert part of the form dismisses the open picker. */}
-      <Pressable onPress={() => setShowCategoryPicker(false)} accessible={false}>
+      <Pressable onPress={dismissPicker} accessible={false}>
         <Text style={fs.title}>{initial?._id ? t('income.edit') : t('income.add')}</Text>
 
         {/* Amount */}
@@ -69,7 +86,7 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
         <Text style={fs.label}>{t('common.category_required')}</Text>
         <TouchableOpacity
           style={fs.select}
-          onPress={() => setShowCategoryPicker(!showCategoryPicker)}
+          onPress={() => (showCategoryPicker ? closePicker() : setShowCategoryPicker(true))}
           accessibilityRole="button"
           accessibilityLabel={selectedCat ? selectedCat.name : t('common.select_category')}
           accessibilityState={{ expanded: showCategoryPicker }}
@@ -84,11 +101,11 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
           // system, so the sheet's pan cancels its drag. The list renders in
           // full and the sheet's own scroll view moves it.
           <View style={[fs.dropdown, { backgroundColor: colors.bgTertiary }]}>
-            {categories.filter((c) => c.type === 'income').map((c) => (
+            {incomeCategories.map((c) => (
               <TouchableOpacity
                 key={c._id}
                 style={fs.dropdownItem}
-                onPress={() => { setCategory(c.name); setShowCategoryPicker(false); }}
+                onPress={() => { setCategory(c.name); closePicker(); }}
                 accessibilityRole="button"
                 accessibilityLabel={c.name}
                 accessibilityState={{ selected: category === c.name }}
@@ -96,6 +113,16 @@ export default function IncomeForm({ initial, categories, onSubmit, onCancel, lo
                 <Text style={[fs.dropdownText, { color: colors.textPrimary }]}>{c.icon} {c.name}</Text>
               </TouchableOpacity>
             ))}
+            <QuickCategoryCreator
+              type="income"
+              existing={incomeCategories}
+              scrollRef={scrollRef}
+              open={addingCategory}
+              onOpen={() => setAddingCategory(true)}
+              onClose={() => setAddingCategory(false)}
+              onCreate={onCreateCategory}
+              onCreated={(c) => { setCategory(c.name); closePicker(); }}
+            />
           </View>
         )}
 

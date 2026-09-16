@@ -280,6 +280,11 @@ const bn = {
     failed_photo: 'প্রোফাইল ছবি আপডেট করা যায়নি',
     permission_needed: 'অনুমতি প্রয়োজন',
     camera_permission: 'প্রোফাইল ছবি তুলতে ক্যামেরার অনুমতি দরকার।',
+    edit_name: 'নাম সম্পাদনা',
+    name_label: 'প্রদর্শন নাম',
+    name_placeholder: 'আপনার নাম লিখুন',
+    name_updated: 'নাম সফলভাবে আপডেট হয়েছে',
+    failed_name: 'নাম আপডেট করা যায়নি',
   },
 
   guide: {

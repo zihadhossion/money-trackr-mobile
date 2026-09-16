@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator, Image,
+  TextInput, Alert, ActivityIndicator, Image, Modal, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
@@ -45,6 +45,10 @@ export default function SettingsScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [nameModalVisible, setNameModalVisible] = useState(false);
+  const [nameValue, setNameValue] = useState('');
+  const [savingName, setSavingName] = useState(false);
+  const nameInputRef = useRef<TextInput>(null);
   const currencySheetRef = useRef<BottomSheet>(null);
   const [currencySheetOpen, setCurrencySheetOpen] = useState(false);
 
@@ -137,6 +141,32 @@ export default function SettingsScreen() {
     ]);
   };
 
+  const openNameModal = () => {
+    setNameValue(user?.displayName ?? '');
+    setNameModalVisible(true);
+  };
+
+  const handleSaveName = async () => {
+    const trimmed = nameValue.trim();
+    if (!trimmed) {
+      Alert.alert(t('common.validation'), t('settings.name_label'));
+      return;
+    }
+    setSavingName(true);
+    try {
+      const { user: updated } = await userService.updateProfile({ displayName: trimmed });
+      await updateUser({ displayName: updated.displayName });
+      Keyboard.dismiss();
+      Alert.alert(t('common.success'), t('settings.name_updated'));
+      setNameModalVisible(false);
+    } catch (e) {
+      Keyboard.dismiss();
+      Alert.alert(t('common.error'), getErrorMessage(e, t('settings.failed_name')));
+    } finally {
+      setSavingName(false);
+    }
+  };
+
   const handleSignOut = () => {
     Alert.alert(t('settings.sign_out_title'), t('settings.sign_out_message'), [
       { text: t('common.cancel'), style: 'cancel' },
@@ -189,9 +219,17 @@ export default function SettingsScreen() {
             )}
           </TouchableOpacity>
           <View style={s.profileInfo}>
-            <Text style={[s.profileName, { color: colors.textPrimary }]} numberOfLines={1}>
-              {user?.displayName}
-            </Text>
+            <TouchableOpacity
+              style={s.nameRow}
+              onPress={openNameModal}
+              accessibilityRole="button"
+              accessibilityLabel={t('settings.edit_name')}
+            >
+              <Text style={[s.profileName, { color: colors.textPrimary }]} numberOfLines={1}>
+                {user?.displayName}
+              </Text>
+              <Feather name="edit-2" size={14} color={colors.textMuted} />
+            </TouchableOpacity>
             <Text style={[s.profileEmail, { color: colors.textMuted }]} numberOfLines={1}>
               {user?.email}
             </Text>
@@ -390,6 +428,51 @@ export default function SettingsScreen() {
           })}
         </BottomSheetView>
       </BottomSheet>
+
+      {/* Edit name modal */}
+      <Modal
+        visible={nameModalVisible}
+        transparent
+        animationType="fade"
+        onShow={() => setTimeout(() => nameInputRef.current?.focus(), 200)}
+        onRequestClose={() => setNameModalVisible(false)}
+      >
+        <View style={s.modalOverlay}>
+          <View style={[s.modalContent, { backgroundColor: colors.bgPrimary }]}>
+            <Text style={[s.modalTitle, { color: colors.textPrimary }]}>{t('settings.edit_name')}</Text>
+            <Text style={[s.modalLabel, { color: colors.textSecondary }]}>{t('settings.name_label')}</Text>
+            <TextInput
+              ref={nameInputRef}
+              style={[s.modalInput, { color: colors.textPrimary, borderColor: colors.borderColor, backgroundColor: colors.bgTertiary }]}
+              value={nameValue}
+              onChangeText={setNameValue}
+              placeholder={t('settings.name_placeholder')}
+              placeholderTextColor={colors.textMuted}
+              accessibilityLabel={t('settings.name_label')}
+            />
+            <View style={s.modalButtons}>
+              <TouchableOpacity
+                style={[s.modalCancelBtn, { borderColor: colors.borderColor }]}
+                onPress={() => setNameModalVisible(false)}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.cancel')}
+              >
+                <Text style={[s.modalCancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.modalSaveBtn, { backgroundColor: colors.primary }]}
+                onPress={handleSaveName}
+                disabled={savingName}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.save')}
+                accessibilityState={{ disabled: savingName, busy: savingName }}
+              >
+                <Text style={s.modalSaveText}>{savingName ? t('common.saving') : t('common.save')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -409,6 +492,7 @@ const styles = (colors: any) => StyleSheet.create({
   avatarBadge: { position: 'absolute', right: 0, bottom: 0, width: 22, height: 22, borderRadius: 11, borderWidth: 2, justifyContent: 'center', alignItems: 'center' },
   profileCard: { flexDirection: 'row', alignItems: 'center' },
   profileInfo: { flex: 1 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   profileName: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold },
   profileEmail: { fontSize: fontSize.meta },
   sectionTitle: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold, marginBottom: 4 },
@@ -435,4 +519,14 @@ const styles = (colors: any) => StyleSheet.create({
   signOutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 12, borderWidth: 1.5, paddingVertical: 14 },
   signOutText: { fontSize: fontSize.body, fontWeight: fontWeight.bold },
   version: { textAlign: 'center', fontSize: fontSize.meta },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  modalContent: { width: '100%', borderRadius: 16, padding: 20 },
+  modalTitle: { fontSize: fontSize.emphasis, fontWeight: fontWeight.bold, marginBottom: 16 },
+  modalLabel: { fontSize: fontSize.meta, fontWeight: fontWeight.semibold, marginBottom: 6 },
+  modalInput: { borderWidth: 1, borderRadius: 10, padding: 12, fontSize: fontSize.body, marginBottom: 20 },
+  modalButtons: { flexDirection: 'row', gap: 12 },
+  modalCancelBtn: { flex: 1, borderWidth: 1, borderRadius: 10, padding: 14, alignItems: 'center' },
+  modalCancelText: { fontSize: fontSize.body, fontWeight: fontWeight.semibold },
+  modalSaveBtn: { flex: 2, borderRadius: 10, padding: 14, alignItems: 'center' },
+  modalSaveText: { fontSize: fontSize.body, fontWeight: fontWeight.semibold, color: '#fff' },
 });
