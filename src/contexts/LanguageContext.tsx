@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Localization from 'expo-localization';
 import i18n, { SUPPORTED_LANGUAGES, LanguageCode } from '../locales';
@@ -35,15 +35,21 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const setLanguage = async (code: LanguageCode) => {
+  const setLanguage = useCallback(async (code: LanguageCode) => {
     setLanguageState(code);
     await i18n.changeLanguage(code);
     await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, code);
     languageStore.set(code);
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    language,
+    setLanguage,
+    supportedLanguages: SUPPORTED_LANGUAGES,
+  }), [language, setLanguage]);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, supportedLanguages: SUPPORTED_LANGUAGES }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   );

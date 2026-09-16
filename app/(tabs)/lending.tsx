@@ -367,7 +367,7 @@ export default function LendingScreen() {
         backgroundStyle={{ backgroundColor: colors.bgPrimary }}
         handleIndicatorStyle={{ backgroundColor: colors.borderColor }}
       >
-        <BottomSheetScrollView>
+        <BottomSheetScrollView keyboardShouldPersistTaps="handled">
           {sheetMode === 'form' && (
             <LendingForm
               key={formKey}

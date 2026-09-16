@@ -282,6 +282,11 @@ const en = {
     failed_photo: 'Failed to update profile photo',
     permission_needed: 'Permission needed',
     camera_permission: 'Camera access is required to take a profile photo.',
+    edit_name: 'Edit Name',
+    name_label: 'Display Name',
+    name_placeholder: 'Enter your name',
+    name_updated: 'Name updated successfully',
+    failed_name: 'Failed to update name',
   },
 
   guide: {

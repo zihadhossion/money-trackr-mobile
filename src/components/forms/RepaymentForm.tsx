@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, Text, TouchableOpacity, Alert, StyleSheet, Keyboard } from 'react-native';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -20,9 +20,21 @@ export default function RepaymentForm({ personName, remainingAmount, onSubmit, o
   const { symbol, format } = useCurrency();
   const { t } = useTranslation();
   const fs = useMemo(() => formStyles(colors), [colors]);
-  const [amount, setAmount] = useState('');
+  const s = useMemo(() => localStyles(colors), [colors]);
+  const [amount, setAmount] = useState(remainingAmount.toString());
+  const [isExceeded, setIsExceeded] = useState(false);
+
+  const handleChangeText = useCallback((text: string) => {
+    setAmount(text);
+    const num = Number(text);
+    setIsExceeded(text !== '' && !isNaN(num) && num > remainingAmount);
+  }, [remainingAmount]);
+
+  const numValue = Number(amount);
+  const canSubmit = !loading && amount !== '' && !isNaN(numValue) && numValue > 0 && numValue <= remainingAmount;
 
   async function handleSubmit() {
+    Keyboard.dismiss();
     const num = Number(amount);
     if (!amount || isNaN(num) || num <= 0) return Alert.alert(t('common.validation'), t('validation.valid_amount'));
     if (num > remainingAmount) return Alert.alert(t('common.validation'), t('validation.exceeds_balance', { amount: format(remainingAmount) }));
@@ -36,20 +48,32 @@ export default function RepaymentForm({ personName, remainingAmount, onSubmit, o
       <Text style={{ fontSize: fontSize.meta, color: colors.textSecondary, marginBottom: 20 }}>{t('lending.remaining_balance', { amount: format(remainingAmount) })}</Text>
 
       <Text style={fs.label}>{t('common.repayment_amount')}</Text>
-      <View style={fs.inputRow}>
+      <View style={[fs.inputRow, isExceeded && { borderColor: colors.danger }]}>
         <Text style={fs.currencySymbol}>{symbol}</Text>
-        <BottomSheetTextInput style={fs.amountInput} value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0.00" placeholderTextColor={colors.textMuted} autoFocus accessibilityLabel={t('a11y.repayment_amount_input')} />
+        <BottomSheetTextInput
+          style={fs.amountInput}
+          value={amount}
+          onChangeText={handleChangeText}
+          keyboardType="numeric"
+          placeholder="0.00"
+          placeholderTextColor={colors.textMuted}
+          autoFocus
+          accessibilityLabel={t('a11y.repayment_amount_input')}
+        />
       </View>
+      {isExceeded && (
+        <Text style={[s.warning, { color: colors.danger }]}>{t('validation.exceeds_balance', { amount: format(remainingAmount) })}</Text>
+      )}
 
       <View style={[fs.buttons, { marginBottom: 0 }]}>
-        <TouchableOpacity style={fs.cancelBtn} onPress={onCancel} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
+        <TouchableOpacity style={fs.cancelBtn} onPress={() => { Keyboard.dismiss(); onCancel(); }} accessibilityRole="button" accessibilityLabel={t('common.cancel')}><Text style={[fs.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text></TouchableOpacity>
         <TouchableOpacity
-          style={[fs.submitBtn, { backgroundColor: colors.success }]}
+          style={[fs.submitBtn, { backgroundColor: colors.success }, !canSubmit && { opacity: 0.4 }]}
           onPress={handleSubmit}
-          disabled={loading}
+          disabled={!canSubmit}
           accessibilityRole="button"
           accessibilityLabel={t('common.record')}
-          accessibilityState={{ disabled: loading, busy: loading }}
+          accessibilityState={{ disabled: !canSubmit, busy: loading }}
         >
           <Text style={fs.submitText}>{loading ? t('common.saving') : t('common.record')}</Text>
         </TouchableOpacity>
@@ -57,3 +81,7 @@ export default function RepaymentForm({ personName, remainingAmount, onSubmit, o
     </View>
   );
 }
+
+const localStyles = (colors: any) => StyleSheet.create({
+  warning: { fontSize: fontSize.meta, marginTop: 6, fontWeight: '500' as const },
+});
